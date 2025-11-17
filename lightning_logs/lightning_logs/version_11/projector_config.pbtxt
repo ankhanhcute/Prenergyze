@@ -1,0 +1,25 @@
+embeddings {
+  tensor_name: "grid_id:08840"
+  metadata_path: "08840/grid_id\\metadata.tsv"
+  tensor_path: "08840/grid_id\\tensors.tsv"
+}
+embeddings {
+  tensor_name: "hour:08840"
+  metadata_path: "08840/hour\\metadata.tsv"
+  tensor_path: "08840/hour\\tensors.tsv"
+}
+embeddings {
+  tensor_name: "day_of_week:08840"
+  metadata_path: "08840/day_of_week\\metadata.tsv"
+  tensor_path: "08840/day_of_week\\tensors.tsv"
+}
+embeddings {
+  tensor_name: "month:08840"
+  metadata_path: "08840/month\\metadata.tsv"
+  tensor_path: "08840/month\\tensors.tsv"
+}
+embeddings {
+  tensor_name: "is_weekend:08840"
+  metadata_path: "08840/is_weekend\\metadata.tsv"
+  tensor_path: "08840/is_weekend\\tensors.tsv"
+}
