@@ -6,6 +6,7 @@ pandas
 matplotlib
 seaborn
 scikit-learn
+<<<<<<< HEAD
 requests-cache
 retry-requests
 requests
@@ -24,3 +25,5 @@ pytorch-lightning
 torch
 
 holidays
+=======
+>>>>>>> 7111d71cc379321669b91f44684c867f5690c8a7

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .env
 
 # Virtual environments
@@ -27,3 +28,6 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+=======
+.env
+>>>>>>> 7111d71cc379321669b91f44684c867f5690c8a7
