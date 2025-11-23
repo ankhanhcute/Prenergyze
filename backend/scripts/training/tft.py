@@ -24,7 +24,7 @@ def train(resume_checkpoint = None):
     data = pd.read_csv(data_path)
 
     data['date'] = pd.to_datetime(data['date'])
-    data['date'] = data['date'].fillna(method='ffill')
+    data['date'] = data['date'].ffill()  # Fixed: use ffill() instead of deprecated fillna(method='ffill')
     print(data['date'].isna().sum())
 
 
@@ -130,7 +130,7 @@ def train(resume_checkpoint = None):
     print(f"\nFirst few columns: {list(data.columns[:10])}")
 
     import lightning.pytorch as pl
-    from lightning.pytorch.callbacks import EarlyStopping, LearningRateMonitor
+    from lightning.pytorch.callbacks import EarlyStopping, LearningRateMonitor, ModelCheckpoint
     from lightning.pytorch.loggers import TensorBoardLogger
     from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer
     from pytorch_forecasting.data import GroupNormalizer
@@ -141,7 +141,10 @@ def train(resume_checkpoint = None):
     max_prediction_length = 24
     max_encoder_length = 168
 
-    training_cutoff = data['time_idx'].max() - max_prediction_length
+    # Use proper validation split (1800 hours ~ 75 days) to match other models
+    validation_hours = 1800
+    training_cutoff = data['time_idx'].max() - validation_hours
+    print(f"Training cutoff: {training_cutoff} (using last {validation_hours} hours for validation)")
 
     training = TimeSeriesDataSet(
         data[lambda x: x.time_idx <= training_cutoff],
@@ -254,16 +257,20 @@ def train(resume_checkpoint = None):
 
     batch_size = 64 
 
+    # Use num_workers=0 on Windows to avoid multiprocessing issues (spawn vs fork)
+    import platform
+    num_workers = 0 if platform.system() == 'Windows' else 4
+    
     training_dataloader = training.to_dataloader(
         train=True, 
         batch_size=batch_size, 
-        num_workers=4
+        num_workers=num_workers
     )
 
     validation_dataloader = validation.to_dataloader(
         train=False, 
         batch_size=batch_size * 10, 
-        num_workers=4
+        num_workers=num_workers
     )
 
     pl.seed_everything(42)
@@ -277,6 +284,12 @@ def train(resume_checkpoint = None):
     )
 
     lr_logger = LearningRateMonitor()
+    checkpoint_callback = ModelCheckpoint(
+        monitor='val_loss',
+        mode='min',
+        save_top_k=1,
+        filename='best-{epoch:02d}-{val_loss:.2f}'
+    )
     logger = TensorBoardLogger('lightning_logs')
 
     trainer = pl.Trainer(
@@ -284,7 +297,7 @@ def train(resume_checkpoint = None):
         accelerator='auto',
         devices='auto',
         gradient_clip_val=0.1,
-        callbacks=[lr_logger, early_stop_callback],
+        callbacks=[lr_logger, early_stop_callback, checkpoint_callback],
         logger=logger,
         enable_progress_bar=True,
         default_root_dir= './checkpoints'
@@ -292,7 +305,7 @@ def train(resume_checkpoint = None):
 
     tft = TemporalFusionTransformer.from_dataset(
         training,
-        learning_rate=0.001,  # Start with this, can tune later
+        learning_rate=0.001,  # Initial LR, will be updated by LR finder
         hidden_size=64,       # Increase for larger datasets (32-128)
         attention_head_size=4, # Number of attention heads (1-4)
         dropout=0.3,          # Regularization (0.1-0.3)
@@ -303,6 +316,32 @@ def train(resume_checkpoint = None):
         log_interval=10
     )
 
+    # Run LR finder BEFORE training (not after) to find optimal learning rate
+    # Skip LR finder if resuming from checkpoint (model already has trained LR)
+    if not resume_checkpoint:
+        print("Running learning rate finder...")
+        from lightning.pytorch.tuner import Tuner
+        
+        res = Tuner(trainer).lr_find(
+            tft,
+            train_dataloaders=training_dataloader,
+            val_dataloaders=validation_dataloader,
+            max_lr=0.1,
+            min_lr=1e-6
+        )
+        
+        suggested_lr = res.suggestion()
+        if suggested_lr is not None and suggested_lr > 0:
+            tft.learning_rate = suggested_lr
+            print(f"Using suggested learning rate: {suggested_lr:.6f}")
+        else:
+            print(f"LR finder didn't suggest a rate, keeping default: {tft.learning_rate}")
+    else:
+        print("Skipping LR finder (resuming from checkpoint)")
+
+    print(f"Number of parameters in network: {tft.size() / 1e3:.1f}k")
+
+    # Train the model with optimal learning rate
     if resume_checkpoint:
         print(f"Resuming training from: {resume_checkpoint}")
         trainer.fit(
@@ -317,26 +356,6 @@ def train(resume_checkpoint = None):
             train_dataloaders=training_dataloader,
             val_dataloaders=validation_dataloader
         )
-
-    print(f"Number of parameters in network: {tft.size() / 1e3:.1f}k")
- 
-    from lightning.pytorch.tuner import Tuner
-
-    res = Tuner(trainer).lr_find(
-        tft,
-        train_dataloaders=training_dataloader,
-        val_dataloaders=validation_dataloader,
-        max_lr=0.1,
-        min_lr=1e-6
-    )
-
-    print(f"Suggested learning rate: {res.suggestion()}")
-
-    trainer.fit(
-        tft,
-        train_dataloaders=training_dataloader,
-        val_dataloaders=validation_dataloader
-    )
 
     best_model_path = trainer.checkpoint_callback.best_model_path
     best_tft = TemporalFusionTransformer.load_from_checkpoint(best_model_path)
