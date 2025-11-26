@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prenergyze - Energy Load Forecasting</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+        }
+
+        .api-config {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .api-config input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-indicator.healthy {
+            background: #10b981;
+        }
+
+        .status-indicator.degraded {
+            background: #f59e0b;
+        }
+
+        .status-indicator.offline {
+            background: #ef4444;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .forecast-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .forecast-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .model-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .model-list li {
+            padding: 8px;
+            background: #f3f4f6;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .sample-data-btn {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Prenergyze</h1>
+            <p>Energy Load Forecasting System</p>
+        </div>
+
+        <div class="api-config">
+            <label for="api-url">API Base URL:</label>
+            <input type="text" id="api-url" value="http://localhost:8000" placeholder="http://localhost:8000">
+        </div>
+
+        <div class="status-bar">
+            <div>
+                <span class="status-indicator offline" id="status-indicator"></span>
+                <span id="status-text">Checking API status...</span>
+            </div>
+            <button class="btn btn-secondary" onclick="checkHealth()">Refresh Status</button>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📊 Forecast Request</h2>
+                <form id="forecast-form">
+                    <div class="form-group">
+                        <label>Temperature (°C):</label>
+                        <input type="number" id="temperature" value="25.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Apparent Temperature (°C):</label>
+                        <input type="number" id="apparent_temp" value="28.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Relative Humidity (%):</label>
+                        <input type="number" id="humidity" value="70.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Vapour Pressure Deficit:</label>
+                        <input type="number" id="vpd" value="0.8" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pressure MSL (hPa):</label>
+                        <input type="number" id="pressure" value="1013.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precipitation (mm):</label>
+                        <input type="number" id="precipitation" value="0.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cloud Cover (%):</label>
+                        <input type="number" id="cloud_cover" value="20.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cloud Cover Low (%):</label>
+                        <input type="number" id="cloud_low" value="10.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cloud Cover Mid (%):</label>
+                        <input type="number" id="cloud_mid" value="5.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cloud Cover High (%):</label>
+                        <input type="number" id="cloud_high" value="5.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ET0 Evapotranspiration:</label>
+                        <input type="number" id="et0" value="0.1" step="0.01" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sunshine Duration (seconds):</label>
+                        <input type="number" id="sunshine" value="3600" step="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Wind Speed (m/s):</label>
+                        <input type="number" id="wind_speed" value="5.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Wind Gusts (m/s):</label>
+                        <input type="number" id="wind_gusts" value="8.0" step="0.1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Wind Direction (degrees):</label>
+                        <input type="number" id="wind_dir" value="180" step="1" required>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="use_ensemble" checked onchange="toggleModelSelection()">
+                        <label for="use_ensemble">Use Ensemble Model</label>
+                    </div>
+
+                    <div class="form-group" id="model-selection-group" style="display: none;">
+                        <label>Select Models for Ensemble (leave unchecked for optimal default):</label>
+                        <div id="model-checkboxes" style="margin-top: 10px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 5px; background: #f9f9f9;">
+                            <!-- Model checkboxes will be populated here -->
+                        </div>
+                        <button type="button" class="btn btn-secondary" style="margin-top: 10px; font-size: 12px; padding: 6px 12px;" onclick="useDefaultModels()">Use Default (Optimal)</button>
+                    </div>
+
+                    <button type="submit" class="btn" id="forecast-btn">Get Forecast</button>
+                    <button type="button" class="btn btn-secondary sample-data-btn" onclick="loadSampleData()">Load Sample Data</button>
+                </form>
+
+                <div id="forecast-results"></div>
+            </div>
+
+            <div class="card">
+                <h2>🤖 Model Information</h2>
+                <div id="model-info">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        Loading model information...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = document.getElementById('api-url');
+        
+        function getApiUrl() {
+            return API_URL.value.replace(/\/$/, '');
+        }
+
+        async function checkHealth() {
+            const statusIndicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            try {
+                const response = await fetch(`${getApiUrl()}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    statusIndicator.className = 'status-indicator healthy';
+                    statusText.textContent = `API Healthy - ${data.models_loaded.length} model(s) loaded`;
+                } else {
+                    statusIndicator.className = 'status-indicator degraded';
+                    statusText.textContent = `API Degraded - ${data.models_loaded.length} model(s) loaded`;
+                }
+                
+                // Load model info if healthy
+                if (data.status === 'healthy') {
+                    loadModelInfo();
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator offline';
+                statusText.textContent = 'API Offline - Check if server is running';
+                console.error('Health check failed:', error);
+            }
+        }
+
+        let availableModels = [];
+        let defaultEnsembleModels = [];
+        let modelMetadata = {};
+
+        async function loadModelInfo() {
+            const modelInfoDiv = document.getElementById('model-info');
+            
+            try {
+                const response = await fetch(`${getApiUrl()}/models`);
+                const data = await response.json();
+                
+                availableModels = data.available_models || [];
+                defaultEnsembleModels = data.ensemble_models || [];
+                modelMetadata = data.model_metadata || {};
+                
+                // Populate model checkboxes
+                populateModelCheckboxes();
+                
+                let html = '<div class="forecast-label">Available Models:</div>';
+                html += '<ul class="model-list">';
+                availableModels.forEach(model => {
+                    const rmse = modelMetadata[model]?.cv_rmse;
+                    const rmseText = rmse ? ` (RMSE: ${rmse.toFixed(2)})` : '';
+                    html += `<li>${model}${rmseText}</li>`;
+                });
+                html += '</ul>';
+                
+                if (defaultEnsembleModels.length > 0) {
+                    html += '<div class="forecast-label" style="margin-top: 15px;">Default Ensemble (Optimal):</div>';
+                    html += '<ul class="model-list">';
+                    defaultEnsembleModels.forEach(model => {
+                        const rmse = modelMetadata[model]?.cv_rmse;
+                        const rmseText = rmse ? ` (RMSE: ${rmse.toFixed(2)})` : '';
+                        html += `<li>${model}${rmseText}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                modelInfoDiv.innerHTML = html;
+            } catch (error) {
+                modelInfoDiv.innerHTML = `<div class="error">Failed to load model information: ${error.message}</div>`;
+            }
+        }
+
+        function populateModelCheckboxes() {
+            const checkboxesDiv = document.getElementById('model-checkboxes');
+            checkboxesDiv.innerHTML = '';
+            
+            availableModels.forEach(model => {
+                const isDefault = defaultEnsembleModels.includes(model);
+                const rmse = modelMetadata[model]?.cv_rmse;
+                const rmseText = rmse ? ` (RMSE: ${rmse.toFixed(2)})` : '';
+                
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.className = 'checkbox-group';
+                checkboxDiv.style.marginBottom = '8px';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `model-${model}`;
+                checkbox.value = model;
+                checkbox.checked = isDefault; // Default to optimal ensemble
+                
+                const label = document.createElement('label');
+                label.htmlFor = `model-${model}`;
+                label.textContent = `${model}${rmseText}`;
+                label.style.marginLeft = '8px';
+                
+                checkboxDiv.appendChild(checkbox);
+                checkboxDiv.appendChild(label);
+                checkboxesDiv.appendChild(checkboxDiv);
+            });
+        }
+
+        function useDefaultModels() {
+            // Uncheck all
+            availableModels.forEach(model => {
+                document.getElementById(`model-${model}`).checked = false;
+            });
+            // Check only default ensemble models
+            defaultEnsembleModels.forEach(model => {
+                const checkbox = document.getElementById(`model-${model}`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+
+        function toggleModelSelection() {
+            const useEnsemble = document.getElementById('use_ensemble').checked;
+            const modelSelectionGroup = document.getElementById('model-selection-group');
+            modelSelectionGroup.style.display = useEnsemble ? 'block' : 'none';
+        }
+
+        function getSelectedModels() {
+            const selected = [];
+            availableModels.forEach(model => {
+                const checkbox = document.getElementById(`model-${model}`);
+                if (checkbox && checkbox.checked) {
+                    selected.push(model);
+                }
+            });
+            // If no models selected, return null to use default
+            // If all default models are selected, return null to use default (cleaner)
+            if (selected.length === 0) {
+                return null;
+            }
+            // Check if selection matches default
+            if (selected.length === defaultEnsembleModels.length && 
+                selected.every(m => defaultEnsembleModels.includes(m))) {
+                return null; // Use default
+            }
+            return selected;
+        }
+
+        function loadSampleData() {
+            // Load realistic sample data
+            document.getElementById('temperature').value = 25.5;
+            document.getElementById('apparent_temp').value = 28.2;
+            document.getElementById('humidity').value = 72.0;
+            document.getElementById('vpd').value = 0.75;
+            document.getElementById('pressure').value = 1013.5;
+            document.getElementById('precipitation').value = 0.0;
+            document.getElementById('cloud_cover').value = 25.0;
+            document.getElementById('cloud_low').value = 12.0;
+            document.getElementById('cloud_mid').value = 8.0;
+            document.getElementById('cloud_high').value = 5.0;
+            document.getElementById('et0').value = 0.12;
+            document.getElementById('sunshine').value = 3600;
+            document.getElementById('wind_speed').value = 5.5;
+            document.getElementById('wind_gusts').value = 9.0;
+            document.getElementById('wind_dir').value = 180;
+        }
+
+        document.getElementById('forecast-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('forecast-btn');
+            const resultsDiv = document.getElementById('forecast-results');
+            
+            btn.disabled = true;
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Generating forecast...</div>';
+            
+            try {
+                // Get current date/time
+                const now = new Date();
+                const dateStr = now.toISOString();
+                
+                // Calculate wind direction sin/cos
+                const windDir = parseFloat(document.getElementById('wind_dir').value);
+                const windDirRad = (windDir * Math.PI) / 180;
+                const windDirCos = Math.cos(windDirRad);
+                const windDirSin = Math.sin(windDirRad);
+                
+                const selectedModels = getSelectedModels();
+                
+                const requestData = {
+                    weather_data: [{
+                        date: dateStr,
+                        temperature_2m: parseFloat(document.getElementById('temperature').value),
+                        apparent_temperature: parseFloat(document.getElementById('apparent_temp').value),
+                        relative_humidity_2m: parseFloat(document.getElementById('humidity').value),
+                        vapour_pressure_deficit: parseFloat(document.getElementById('vpd').value),
+                        pressure_msl: parseFloat(document.getElementById('pressure').value),
+                        precipitation: parseFloat(document.getElementById('precipitation').value),
+                        cloud_cover: parseFloat(document.getElementById('cloud_cover').value),
+                        cloud_cover_low: parseFloat(document.getElementById('cloud_low').value),
+                        cloud_cover_mid: parseFloat(document.getElementById('cloud_mid').value),
+                        cloud_cover_high: parseFloat(document.getElementById('cloud_high').value),
+                        et0_fao_evapotranspiration: parseFloat(document.getElementById('et0').value),
+                        sunshine_duration: parseFloat(document.getElementById('sunshine').value),
+                        wind_speed_10m: parseFloat(document.getElementById('wind_speed').value),
+                        wind_gusts_10m: parseFloat(document.getElementById('wind_gusts').value),
+                        wind_direction_10m: windDir,
+                        wind_dir_cos_10m: windDirCos,
+                        wind_dir_sin_10m: windDirSin
+                    }],
+                    use_ensemble: document.getElementById('use_ensemble').checked,
+                    selected_models: selectedModels
+                };
+                
+                const response = await fetch(`${getApiUrl()}/forecast`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                let html = '<div class="success">';
+                html += '<div class="forecast-label">Forecasted Load:</div>';
+                html += `<div class="forecast-value">${data.forecast[0].toFixed(2)} MW</div>`;
+                
+                if (data.models_used && data.models_used.length > 0) {
+                    html += '<div class="forecast-label" style="margin-top: 15px;">Models Used:</div>';
+                    html += '<ul class="model-list">';
+                    data.models_used.forEach(model => {
+                        const weight = data.model_weights && data.model_weights[model] 
+                            ? ` (Weight: ${(data.model_weights[model] * 100).toFixed(1)}%)` 
+                            : '';
+                        html += `<li>${model}${weight}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                if (data.individual_predictions) {
+                    html += '<div class="forecast-label" style="margin-top: 15px;">Individual Predictions:</div>';
+                    html += '<ul class="model-list">';
+                    for (const [model, pred] of Object.entries(data.individual_predictions)) {
+                        html += `<li>${model}: ${pred[0].toFixed(2)} MW</li>`;
+                    }
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Initialize model selection visibility
+        toggleModelSelection();
+        
+        // Check health on page load
+        checkHealth();
+        
+        // Auto-refresh health every 30 seconds
+        setInterval(checkHealth, 30000);
+    </script>
+</body>
+</html>
+

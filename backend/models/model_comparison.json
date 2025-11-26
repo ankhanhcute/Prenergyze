@@ -1,0 +1,87 @@
+{
+  "timestamp": "2025-11-25T18:59:15.640767",
+  "models": {
+    "linear_regression": {
+      "cv_rmse": 756.1682948895144,
+      "cv_mae": 508.85990212821633,
+      "cv_r2": 0.9561210260557229,
+      "cv_inference_time_ms": 0.004992485046386719,
+      "test_rmse": 765.0115766289609,
+      "status": "success"
+    },
+    "random_forest": {
+      "cv_rmse": 842.8257358340612,
+      "cv_mae": 530.6033869280711,
+      "cv_r2": 0.9409429865144061,
+      "cv_inference_time_ms": 0.4152953624725342,
+      "test_rmse": 635.8901197340865,
+      "status": "success"
+    },
+    "xgboost": {
+      "cv_rmse": 798.7776966806016,
+      "cv_mae": 522.0475043402778,
+      "cv_r2": 0.9490481022915229,
+      "cv_inference_time_ms": 0.05634903907775879,
+      "test_rmse": 649.6264505727241,
+      "status": "success"
+    },
+    "lightgbm": {
+      "cv_rmse": 801.8462422371917,
+      "cv_mae": 536.7082232303613,
+      "cv_r2": 0.9483178541042632,
+      "cv_inference_time_ms": 0.020053386688232422,
+      "test_rmse": 618.3558470224981,
+      "status": "success"
+    },
+    "lstm": {
+      "cv_rmse": 863.3515128680958,
+      "cv_mae": 642.7050247192383,
+      "cv_r2": 0.9407072961330414,
+      "cv_inference_time_ms": 0.02630174160003662,
+      "test_rmse": 608.7748454888721,
+      "status": "success"
+    }
+  },
+  "ranking": [
+    {
+      "rank": 1,
+      "model": "linear_regression",
+      "cv_rmse": 756.1682948895144,
+      "cv_mae": 508.85990212821633,
+      "cv_r2": 0.9561210260557229,
+      "inference_time_ms": 0.004992485046386719
+    },
+    {
+      "rank": 2,
+      "model": "xgboost",
+      "cv_rmse": 798.7776966806016,
+      "cv_mae": 522.0475043402778,
+      "cv_r2": 0.9490481022915229,
+      "inference_time_ms": 0.05634903907775879
+    },
+    {
+      "rank": 3,
+      "model": "lightgbm",
+      "cv_rmse": 801.8462422371917,
+      "cv_mae": 536.7082232303613,
+      "cv_r2": 0.9483178541042632,
+      "inference_time_ms": 0.020053386688232422
+    },
+    {
+      "rank": 4,
+      "model": "random_forest",
+      "cv_rmse": 842.8257358340612,
+      "cv_mae": 530.6033869280711,
+      "cv_r2": 0.9409429865144061,
+      "inference_time_ms": 0.4152953624725342
+    },
+    {
+      "rank": 5,
+      "model": "lstm",
+      "cv_rmse": 863.3515128680958,
+      "cv_mae": 642.7050247192383,
+      "cv_r2": 0.9407072961330414,
+      "inference_time_ms": 0.02630174160003662
+    }
+  ]
+}
