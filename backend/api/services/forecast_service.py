@@ -87,6 +87,29 @@ class ForecastService:
         # Convert weather data to DataFrame
         df = pd.DataFrame(weather_data)
         
+        # Check for missing critical values
+        critical_cols = ['temperature_2m', 'relative_humidity_2m', 'pressure_msl']
+        missing_critical = df[critical_cols].isnull().any(axis=1)
+        if missing_critical.any():
+            num_missing = missing_critical.sum()
+            raise ValueError(
+                f"Found {num_missing} weather data points with missing critical values. "
+                f"Please ensure all weather data has temperature, humidity, and pressure values."
+            )
+        
+        # Fill other missing values with reasonable defaults
+        df = df.fillna({
+            'precipitation': 0.0,
+            'cloud_cover': 0.0,
+            'cloud_cover_low': 0.0,
+            'cloud_cover_mid': 0.0,
+            'cloud_cover_high': 0.0,
+            'wind_speed_10m': 0.0,
+            'wind_gusts_10m': 0.0,
+            'sunshine_duration': 0.0,
+            'et0_fao_evapotranspiration': 0.0,
+        })
+        
         # Prepare features
         historical_load_series = None
         if historical_load:
@@ -132,6 +155,12 @@ class ForecastService:
         if use_ensemble:
             ensemble_pred, individual_preds = ensemble_to_use.predict(X, feature_names)
             
+            # Validate predictions - ensure non-negative (energy load can't be negative)
+            ensemble_pred = np.maximum(ensemble_pred, 0.0)
+            individual_preds = {
+                name: np.maximum(pred, 0.0) for name, pred in individual_preds.items()
+            }
+            
             return {
                 'forecast': ensemble_pred.tolist(),
                 'individual_predictions': {
@@ -165,9 +194,19 @@ class ForecastService:
     
     def get_model_info(self) -> Dict:
         """Get information about loaded models."""
-        return {
-            'available_models': self.get_available_models(),
-            'ensemble_models': self.ensemble.model_names if self.ensemble else [],
-            'model_metadata': self.model_metadata
-        }
+        try:
+            available_models = self.get_available_models()
+            ensemble_models = self.ensemble.model_names if self.ensemble and hasattr(self.ensemble, 'model_names') else []
+            return {
+                'available_models': available_models,
+                'ensemble_models': ensemble_models,
+                'model_metadata': self.model_metadata
+            }
+        except Exception as e:
+            # Return safe defaults if there's an error
+            return {
+                'available_models': [],
+                'ensemble_models': [],
+                'model_metadata': {}
+            }
 

@@ -1,56 +1,96 @@
 # Prenergyze Frontend
 
-Simple HTML/JavaScript frontend for testing the Energy Load Forecasting API.
+React-based frontend application for the Prenergyze Energy Load Forecasting System.
 
 ## Features
 
-- **API Health Check**: Monitor API status and loaded models
-- **Model Information**: View available models and ensemble configuration
-- **Forecast Interface**: Submit weather data and get load forecasts
-- **Sample Data**: Quick-load button for testing with sample data
-- **Responsive Design**: Works on desktop and mobile devices
+- **Entry Page**: Welcome screen with app purpose, research abstract, and model information
+- **Visualization Page**: Interactive data visualizations including:
+  - Historical load data charts
+  - Correlation heatmaps between weather variables and load
+  - Weather forecast selector
+  - ML model predictions with forecasted weather data
 
-## Usage
+## Setup
 
-1. **Start the Backend API**:
+### Prerequisites
+
+- Node.js 16+ and npm/yarn
+- Backend API running on `http://localhost:8000` (or configure via environment variable)
+
+### Installation
+
+1. Navigate to the frontend directory:
    ```bash
-   cd backend/api
-   python app.py
+   cd frontend
    ```
-   Or using uvicorn:
+
+2. Install dependencies:
    ```bash
-   uvicorn backend.api.app:app --host 0.0.0.0 --port 8000
+   npm install
    ```
 
-2. **Open the Frontend**:
-   - Simply open `frontend/index.html` in a web browser
-   - Or serve it with a simple HTTP server:
-     ```bash
-     # Python 3
-     python -m http.server 8080
-     
-     # Then navigate to http://localhost:8080
-     ```
+3. (Optional) Configure API base URL by creating a `.env` file:
+   ```env
+   VITE_API_BASE_URL=http://localhost:8000
+   ```
 
-3. **Configure API URL** (if needed):
-   - Default is `http://localhost:8000`
-   - Change in the "API Base URL" field if your API runs on a different port/host
+### Development
 
-4. **Test the API**:
-   - Click "Refresh Status" to check API health
-   - Click "Load Sample Data" to fill in sample weather values
-   - Click "Get Forecast" to generate a load prediction
-   - View model information in the right panel
+Start the development server:
+```bash
+npm run dev
+```
 
-## API Endpoints Used
+The application will be available at `http://localhost:3000`
 
-- `GET /health` - Check API health and loaded models
-- `GET /models` - Get information about available models
-- `POST /forecast` - Submit weather data and get load forecast
+### Build
 
-## Notes
+Build for production:
+```bash
+npm run build
+```
 
-- The frontend uses vanilla JavaScript (no dependencies)
-- CORS is enabled on the backend for all origins (development only)
-- The forecast returns load in MW (Megawatts)
+The built files will be in the `dist` directory.
 
+### Preview Production Build
+
+Preview the production build:
+```bash
+npm run preview
+```
+
+## Project Structure
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   ├── Layout/          # Navigation and layout components
+│   │   ├── EntryPage/        # Entry page components
+│   │   └── VisualizationPage/ # Visualization components
+│   ├── pages/                # Page components
+│   ├── services/             # API service layer
+│   ├── utils/                # Utility functions
+│   └── styles/               # CSS styles
+├── public/                   # Static assets
+└── package.json             # Dependencies and scripts
+```
+
+## Technologies
+
+- **React 18** - UI library
+- **React Router** - Routing
+- **Recharts** - Charting library
+- **Axios** - HTTP client
+- **Vite** - Build tool and dev server
+
+## API Integration
+
+The frontend communicates with:
+- **Backend API** (`/api/*`) - FastAPI backend for model predictions and historical data
+- **Open-Meteo API** - Weather forecast data
+
+## Environment Variables
+
+- `VITE_API_BASE_URL` - Base URL for the FastAPI backend (default: `http://localhost:8000`)
