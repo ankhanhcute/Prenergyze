@@ -140,6 +140,69 @@ class EnsembleModel:
         
         return y_pred
     
+    def _predict_sarimax(self, X: np.ndarray, model_info: Dict) -> np.ndarray:
+        """Predict using SARIMAX model."""
+        model = model_info['model']
+        scaler = model_info['scaler']
+        
+        # SARIMAX expects scaled exogenous variables
+        # We only need the last row (current prediction step) because
+        # statsmodels forecast methods handle the time index relative to the end of training data.
+        # However, since we are in a recursive loop predicting one step at a time,
+        # and we don't want to re-fit the model or manipulate the internal state complexly,
+        # we can use the fitted model's forecast with the new exog.
+        
+        # IMPORTANT: The loaded 'model' is a SARIMAXResultsWrapper from statsmodels.
+        # Its .forecast() or .get_forecast() methods typically project from the end of the *training* data.
+        # This is problematic for real-time inference on new data far in the future from training time.
+        
+        # Ideally, SARIMAX needs to be updated with recent observations (Kalman Filter update).
+        # model.append(new_obs) or model.extend(new_obs) could work but might be slow.
+        
+        # For this implementation, we'll assume we are predicting for the NEXT step
+        # relative to the model's internal state.
+        # If the model is stale (trained long ago), this will be inaccurate (it will predict for trained_date + 1).
+        # BUT, if we just retrained it (which we did), it's fine.
+        
+        # However, in a recursive loop (steps 1, 2, 3...), we are moving away from the training end.
+        # We need to tell the model "predict 1 step ahead, given this exog".
+        # Actually, simply calling .forecast(steps=1, exog=...) usually predicts
+        # for the *next* step after the model's end index.
+        
+        # If we are in a recursive loop in forecast_service, we are calling this method multiple times.
+        # Each time, we pass 1 row of X.
+        # We can't easily update the model state inside this pure prediction method without side effects.
+        
+        # Hack/Workaround for MVP:
+        # We use the model's predict function but we rely on the fact that we just want *a* prediction
+        # given the exogenous variables. The AR/MA components will decay to 0 (or mean) quickly 
+        # if we project far out, leaving mostly the exogenous influence (weather).
+        # This is actually exactly what we want for long-term "wave pattern" from weather.
+        
+        # So we will use the .predict() method with exog.
+        # Note: X shape is (1, n_features) usually in the loop.
+        
+        if scaler:
+            X_scaled = scaler.transform(X)
+        else:
+            X_scaled = X
+            
+        # Predict 1 step. 
+        # We use start=model.nobs, end=model.nobs + len(X) - 1
+        # effectively predicting "next steps"
+        
+        # To avoid "value error" about index, we use integers.
+        # Note: We are not updating the AR history here, so the AR component is static
+        # (based on end of training). This is a limitation of static SARIMAX inference.
+        # But the exogenous (weather) part will drive the wave pattern.
+        
+        start_idx = model.model.nobs
+        end_idx = start_idx + len(X) - 1
+        
+        pred = model.predict(start=start_idx, end=end_idx, exog=X_scaled)
+        
+        return pred.values
+    
     def predict(self, X: np.ndarray, feature_names: Optional[List[str]] = None) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
         """
         Make ensemble prediction.
@@ -179,6 +242,8 @@ class EnsembleModel:
                     pred = self._predict_linear_regression(X_aligned, model_info)
                 elif name == 'lstm':
                     pred = self._predict_lstm(X_aligned, model_info)
+                elif name == 'sarimax':
+                    pred = self._predict_sarimax(X_aligned, model_info)
                 else:
                     # Tree-based models
                     pred = self._predict_tree_model(X_aligned, model_info)

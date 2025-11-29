@@ -54,8 +54,8 @@ const ModelInfo = () => {
     <div className="card">
       <h2>Model Information</h2>
       
-      <div style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '16px', marginBottom: '10px', color: '#333' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#a78bfa', fontWeight: '600' }}>
           Available Models ({available_models?.length || 0})
         </h3>
         <ul className="model-list">
@@ -65,9 +65,9 @@ const ModelInfo = () => {
             const r2 = metadata?.cv_r2;
             return (
               <li key={model}>
-                <strong>{model}</strong>
-                {rmse && ` - RMSE: ${rmse.toFixed(2)}`}
-                {r2 && ` | R²: ${r2.toFixed(3)}`}
+                <strong style={{ color: '#e5e7eb' }}>{model}</strong>
+                {rmse && <span style={{ color: '#9ca3af' }}> - RMSE: {rmse.toFixed(2)}</span>}
+                {r2 && <span style={{ color: '#9ca3af' }}> | R²: {r2.toFixed(3)}</span>}
               </li>
             );
           })}
@@ -75,8 +75,8 @@ const ModelInfo = () => {
       </div>
 
       {ensemble_models && ensemble_models.length > 0 && (
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '16px', marginBottom: '10px', color: '#333' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#a78bfa', fontWeight: '600' }}>
             Ensemble Models (Optimal Selection)
           </h3>
           <ul className="model-list">
@@ -85,8 +85,8 @@ const ModelInfo = () => {
               const rmse = metadata?.cv_rmse;
               return (
                 <li key={model}>
-                  <strong>{model}</strong>
-                  {rmse && ` - RMSE: ${rmse.toFixed(2)}`}
+                  <strong style={{ color: '#e5e7eb' }}>{model}</strong>
+                  {rmse && <span style={{ color: '#9ca3af' }}> - RMSE: {rmse.toFixed(2)}</span>}
                 </li>
               );
             })}
@@ -94,9 +94,9 @@ const ModelInfo = () => {
         </div>
       )}
 
-      <div style={{ marginTop: '20px', padding: '15px', background: '#f3f4f6', borderRadius: '5px' }}>
-        <p style={{ fontSize: '14px', color: '#555', margin: 0 }}>
-          <strong>Ensemble Strategy:</strong> The system uses inverse RMSE weighting to combine 
+      <div style={{ marginTop: '24px', padding: '20px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: '12px' }}>
+        <p style={{ fontSize: '14px', color: '#d1d5db', margin: 0, lineHeight: '1.6' }}>
+          <strong style={{ color: '#a78bfa' }}>Ensemble Strategy:</strong> The system uses inverse RMSE weighting to combine 
           predictions from the top-performing models, automatically selecting the optimal subset 
           based on cross-validation performance and inference time constraints.
         </p>

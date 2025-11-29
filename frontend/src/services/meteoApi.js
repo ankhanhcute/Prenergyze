@@ -8,11 +8,11 @@ const METEO_BASE_URL = 'https://api.open-meteo.com/v1/forecast';
  * Fetch weather forecast from Open-Meteo API
  * @param {number} lat - Latitude
  * @param {number} lon - Longitude
- * @param {string} startDate - Start date in YYYY-MM-DD format
- * @param {string} endDate - End date in YYYY-MM-DD format
+ * @param {number} forecastHours - Number of hours to forecast (default: 24)
+ * @param {string} startDate - Optional start date in YYYY-MM-DD format (if not provided, uses current time)
  * @returns {Promise<Array>} Array of weather data objects
  */
-export const fetchWeatherForecast = async (lat, lon, startDate, endDate) => {
+export const fetchWeatherForecast = async (lat, lon, forecastHours = 24, startDate = null) => {
   try {
     const hourlyParams = [
       'temperature_2m',
@@ -32,13 +32,23 @@ export const fetchWeatherForecast = async (lat, lon, startDate, endDate) => {
       'wind_direction_10m',
     ];
 
+    // Calculate end date based on forecast hours
+    const endDate = new Date();
+    endDate.setHours(endDate.getHours() + forecastHours);
+    const endDateStr = endDate.toISOString().split('T')[0];
+
     const params = new URLSearchParams({
       latitude: lat.toString(),
       longitude: lon.toString(),
-      start_date: startDate,
-      end_date: endDate,
       hourly: hourlyParams.join(','),
+      forecast_days: Math.ceil(forecastHours / 24), // Open-Meteo uses forecast_days
     });
+
+    // Only add start_date if explicitly provided (otherwise API uses current time)
+    if (startDate) {
+      params.append('start_date', startDate);
+      params.append('end_date', endDateStr);
+    }
 
     const response = await fetch(`${METEO_BASE_URL}?${params.toString()}`);
     
@@ -56,8 +66,16 @@ export const fetchWeatherForecast = async (lat, lon, startDate, endDate) => {
     const hourly = data.hourly;
     const timeArray = hourly.time || [];
     const weatherData = [];
+    const now = new Date();
 
     for (let i = 0; i < timeArray.length; i++) {
+      const dataTime = new Date(timeArray[i]);
+      
+      // Only include future forecast data (skip historical/past data)
+      if (dataTime <= now) {
+        continue;
+      }
+      
       const windDir = hourly.wind_direction_10m?.[i] || 0;
       const windDirRad = (windDir * Math.PI) / 180;
       

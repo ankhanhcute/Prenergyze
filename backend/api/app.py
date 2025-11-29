@@ -108,6 +108,98 @@ async def forecast(request: ForecastRequest):
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
+@app.get("/data/historical/recent", tags=["Data"])
+async def get_recent_historical_data(
+    hours: Optional[int] = 168
+):
+    """
+    Get recent historical energy load and weather data (last N hours from current time).
+    
+    Args:
+        hours: Number of hours to look back from current time (default: 168 = 7 days)
+        
+    Returns:
+        JSON array of recent historical data records
+    """
+    try:
+        from datetime import datetime, timedelta, timezone
+        
+        # Get current time in UTC
+        now_utc = datetime.now(timezone.utc)
+        cutoff_time = now_utc - timedelta(hours=hours)
+        
+        data_path = BASE_DIR / 'data' / 'processed' / 'FEATURE_ENGINEERED_DATASET.csv'
+        
+        if not data_path.exists():
+            alt_path = BASE_DIR.parent / 'backend' / 'data' / 'processed' / 'FEATURE_ENGINEERED_DATASET.csv'
+            if alt_path.exists():
+                data_path = alt_path
+            else:
+                current_file = Path(__file__).resolve()
+                data_path = current_file.parent.parent.parent / 'data' / 'processed' / 'FEATURE_ENGINEERED_DATASET.csv'
+        
+        if not data_path.exists():
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Historical data file not found. Searched: {data_path}"
+            )
+        
+        df = pd.read_csv(data_path, low_memory=False)
+        
+        if 'date' not in df.columns:
+            raise HTTPException(
+                status_code=500,
+                detail=f"CSV file missing 'date' column. Available columns: {list(df.columns[:10])}"
+            )
+        
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        df = df.dropna(subset=['date'])
+        
+        # Convert to naive datetime for comparison (simpler and more reliable)
+        if df['date'].dt.tz is not None:
+            df['date'] = df['date'].dt.tz_localize(None)
+        
+        # Convert cutoff times to naive datetime
+        cutoff_naive = cutoff_time.replace(tzinfo=None) if cutoff_time.tzinfo else cutoff_time
+        now_naive = now_utc.replace(tzinfo=None) if now_utc.tzinfo else now_utc
+        
+        # Filter to recent data (last N hours from now)
+        df = df[df['date'] >= cutoff_naive]
+        df = df[df['date'] < now_naive]  # Only historical, not future
+        
+        # Sort by date
+        df = df.sort_values('date')
+        
+        # Select key columns for visualization
+        key_columns = [
+            'date', 'load', 'temperature_2m', 'apparent_temperature',
+            'relative_humidity_2m', 'pressure_msl', 'precipitation',
+            'cloud_cover', 'wind_speed_10m', 'wind_gusts_10m'
+        ]
+        
+        available_columns = [col for col in key_columns if col in df.columns]
+        
+        if not available_columns:
+            raise HTTPException(
+                status_code=500,
+                detail=f"No matching columns found. Available columns: {list(df.columns[:10])}"
+            )
+        
+        df_subset = df[available_columns].copy()
+        df_subset['date'] = df_subset['date'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        
+        result = df_subset.where(pd.notnull(df_subset), None).to_dict('records')
+        
+        return result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = f"Error loading recent historical data: {str(e)}\n{traceback.format_exc()}"
+        raise HTTPException(status_code=500, detail=error_detail)
+
+
 @app.get("/data/historical", tags=["Data"])
 async def get_historical_data(
     start_date: Optional[str] = None,

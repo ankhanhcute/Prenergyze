@@ -99,26 +99,36 @@ const HistoricalDataChart = () => {
 
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={filteredData}>
-          <CartesianGrid strokeDasharray="3 3" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
           <XAxis 
             dataKey="date" 
             tickFormatter={formatXAxis}
             angle={-45}
             textAnchor="end"
             height={80}
+            stroke="#9ca3af"
+            tick={{ fill: '#9ca3af' }}
           />
           <YAxis 
-            label={{ value: 'Load (MW)', angle: -90, position: 'insideLeft' }}
+            label={{ value: 'Load (MW)', angle: -90, position: 'insideLeft', fill: '#9ca3af' }}
+            stroke="#9ca3af"
+            tick={{ fill: '#9ca3af' }}
           />
           <Tooltip 
+            contentStyle={{
+              backgroundColor: 'rgba(17, 17, 19, 0.95)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: '8px',
+              color: '#e5e7eb'
+            }}
             labelFormatter={(value) => new Date(value).toLocaleString()}
             formatter={(value) => [`${value.toFixed(2)} MW`, 'Load']}
           />
-          <Legend />
+          <Legend wrapperStyle={{ color: '#d1d5db' }} />
           <Line 
             type="monotone" 
             dataKey="load" 
-            stroke="#667eea" 
+            stroke="#8b5cf6" 
             strokeWidth={2}
             dot={false}
             name="Energy Load (MW)"
@@ -126,7 +136,7 @@ const HistoricalDataChart = () => {
         </LineChart>
       </ResponsiveContainer>
       
-      <div style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
+      <div style={{ marginTop: '20px', fontSize: '14px', color: '#9ca3af' }}>
         Showing {filteredData.length} data points
       </div>
     </div>

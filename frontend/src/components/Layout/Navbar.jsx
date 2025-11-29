@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../../assets/logo.png';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -8,7 +9,7 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          ⚡ Prenergyze
+          <img src={logo} alt="Prenergyze" className="navbar-logo" />
         </Link>
         <div className="navbar-links">
           <Link 

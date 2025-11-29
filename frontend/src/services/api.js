@@ -74,6 +74,21 @@ export const getHistoricalData = async () => {
 };
 
 /**
+ * Get recent historical data (last N hours from current time)
+ * @param {number} hours - Number of hours to look back (default: 168 = 7 days)
+ */
+export const getRecentHistoricalData = async (hours = 168) => {
+  try {
+    const response = await api.get('/data/historical/recent', {
+      params: { hours }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(`Failed to fetch recent historical data: ${error.message}`);
+  }
+};
+
+/**
  * Get correlation matrix
  */
 export const getCorrelation = async () => {

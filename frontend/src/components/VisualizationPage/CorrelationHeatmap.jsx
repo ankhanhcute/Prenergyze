@@ -59,7 +59,7 @@ const CorrelationHeatmap = () => {
   return (
     <div className="card">
       <h2>Correlation Heatmap</h2>
-      <p style={{ marginBottom: '20px', color: '#666', fontSize: '14px' }}>
+      <p style={{ marginBottom: '20px', color: '#9ca3af', fontSize: '14px' }}>
         Correlation coefficients between weather variables and energy load. 
         Values range from -1 (strong negative correlation) to +1 (strong positive correlation).
       </p>
@@ -68,18 +68,19 @@ const CorrelationHeatmap = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <thead>
             <tr>
-              <th style={{ padding: '10px', textAlign: 'left', border: '1px solid #ddd', background: '#f3f4f6' }}>
+              <th style={{ padding: '12px', textAlign: 'left', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(139, 92, 246, 0.1)', color: '#e5e7eb' }}>
                 Variable
               </th>
               {columns.map((col) => (
                 <th 
                   key={col}
                   style={{ 
-                    padding: '10px', 
+                    padding: '12px', 
                     textAlign: 'center', 
-                    border: '1px solid #ddd', 
-                    background: '#f3f4f6',
-                    minWidth: '80px'
+                    border: '1px solid rgba(255, 255, 255, 0.1)', 
+                    background: 'rgba(139, 92, 246, 0.1)',
+                    minWidth: '80px',
+                    color: '#e5e7eb'
                   }}
                 >
                   {col.length > 15 ? col.substring(0, 15) + '...' : col}
@@ -92,10 +93,11 @@ const CorrelationHeatmap = () => {
               <tr key={rowCol}>
                 <td 
                   style={{ 
-                    padding: '10px', 
+                    padding: '12px', 
                     fontWeight: 'bold', 
-                    border: '1px solid #ddd',
-                    background: '#f9fafb'
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(31, 41, 55, 0.5)',
+                    color: '#e5e7eb'
                   }}
                 >
                   {rowCol}
@@ -107,11 +109,11 @@ const CorrelationHeatmap = () => {
                     <td
                       key={colCol}
                       style={{
-                        padding: '10px',
+                        padding: '12px',
                         textAlign: 'center',
-                        border: '1px solid #ddd',
+                        border: '1px solid rgba(255, 255, 255, 0.1)',
                         background: color,
-                        color: Math.abs(value) > 0.5 ? 'white' : '#333',
+                        color: Math.abs(value) > 0.5 ? 'white' : '#d1d5db',
                         fontWeight: Math.abs(value) > 0.7 ? 'bold' : 'normal'
                       }}
                       title={`${rowCol} vs ${colCol}: ${value.toFixed(3)}`}
@@ -126,22 +128,22 @@ const CorrelationHeatmap = () => {
         </table>
       </div>
 
-      <div style={{ marginTop: '20px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '20px', height: '20px', background: '#ef4444', border: '1px solid #ddd' }}></div>
-          <span style={{ fontSize: '12px' }}>Strong (|r| ≥ 0.7)</span>
+      <div style={{ marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '20px', height: '20px', background: '#ef4444', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}></div>
+          <span style={{ fontSize: '12px', color: '#d1d5db' }}>Strong (|r| ≥ 0.7)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '20px', height: '20px', background: '#f59e0b', border: '1px solid #ddd' }}></div>
-          <span style={{ fontSize: '12px' }}>Moderate (0.4 ≤ |r| &lt; 0.7)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '20px', height: '20px', background: '#f59e0b', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}></div>
+          <span style={{ fontSize: '12px', color: '#d1d5db' }}>Moderate (0.4 ≤ |r| &lt; 0.7)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '20px', height: '20px', background: '#eab308', border: '1px solid #ddd' }}></div>
-          <span style={{ fontSize: '12px' }}>Weak (0.2 ≤ |r| &lt; 0.4)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '20px', height: '20px', background: '#eab308', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}></div>
+          <span style={{ fontSize: '12px', color: '#d1d5db' }}>Weak (0.2 ≤ |r| &lt; 0.4)</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '20px', height: '20px', background: '#d1d5db', border: '1px solid #ddd' }}></div>
-          <span style={{ fontSize: '12px' }}>None (|r| &lt; 0.2)</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '20px', height: '20px', background: '#6b7280', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '4px' }}></div>
+          <span style={{ fontSize: '12px', color: '#d1d5db' }}>None (|r| &lt; 0.2)</span>
         </div>
       </div>
     </div>

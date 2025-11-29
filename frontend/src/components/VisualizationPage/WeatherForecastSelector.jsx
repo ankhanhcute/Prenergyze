@@ -1,39 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { fetchWeatherForecast } from '../../services/meteoApi';
-import { formatDateForAPI } from '../../utils/dataProcessing';
 
-const WeatherForecastSelector = ({ onWeatherDataFetched }) => {
+const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) => {
   const [lat, setLat] = useState('28.084358');
   const [lon, setLon] = useState('-82.372894');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [forecastHours, setForecastHours] = useState(24);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
 
-  // Set default dates (today and 7 days from now)
-  useEffect(() => {
-    const today = new Date();
-    const weekFromNow = new Date();
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
-    setStartDate(formatDateForAPI(today));
-    setEndDate(formatDateForAPI(weekFromNow));
-  }, []);
-
-  const handleFetchWeather = async () => {
-    if (!startDate || !endDate) {
-      setError('Please select start and end dates');
-      return;
-    }
-
+  const handleFetchWeather = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      // Fetch future weather forecast from current time
       const data = await fetchWeatherForecast(
         parseFloat(lat),
         parseFloat(lon),
-        startDate,
-        endDate
+        forecastHours,
+        null // null means use current time
       );
       setWeatherData(data);
       if (onWeatherDataFetched) {
@@ -44,12 +29,19 @@ const WeatherForecastSelector = ({ onWeatherDataFetched }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lat, lon, forecastHours, onWeatherDataFetched]);
+
+  // Auto-fetch on mount if enabled
+  useEffect(() => {
+    if (autoFetch) {
+      handleFetchWeather();
+    }
+  }, [autoFetch, handleFetchWeather]);
 
   return (
     <div className="card">
       <h2>Weather Forecast Selector</h2>
-      <p style={{ marginBottom: '20px', color: '#666', fontSize: '14px' }}>
+      <p style={{ marginBottom: '20px', color: '#9ca3af', fontSize: '14px' }}>
         Fetch forecasted weather data from Open-Meteo API to use for load predictions.
       </p>
 
@@ -74,23 +66,21 @@ const WeatherForecastSelector = ({ onWeatherDataFetched }) => {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-        <div className="form-group">
-          <label>Start Date:</label>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>End Date:</label>
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-          />
-        </div>
+      <div className="form-group" style={{ marginBottom: '15px' }}>
+        <label>Forecast Horizon (hours):</label>
+        <select
+          value={forecastHours}
+          onChange={(e) => setForecastHours(parseInt(e.target.value))}
+        >
+          <option value={6}>6 hours</option>
+          <option value={12}>12 hours</option>
+          <option value={24}>24 hours (1 day)</option>
+          <option value={48}>48 hours (2 days)</option>
+          <option value={72}>72 hours (3 days)</option>
+        </select>
+        <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px' }}>
+          Forecast will start from current time and predict the next {forecastHours} hours
+        </p>
       </div>
 
       <button

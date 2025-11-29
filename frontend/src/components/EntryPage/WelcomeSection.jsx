@@ -1,9 +1,13 @@
+import logo from '../../assets/logo.png';
+
 const WelcomeSection = () => {
   return (
     <div className="header">
-      <h1>⚡ Prenergyze</h1>
-      <p>Machine Learning-Powered Energy Load Forecasting System</p>
-      <p style={{ marginTop: '15px', fontSize: '16px', color: '#555' }}>
+      <img src={logo} alt="Prenergyze" className="brand-logo" style={{ height: 'auto', maxHeight: '1000px', width: 'auto', maxWidth: '100%', marginBottom: '-150px', marginTop: '-200px' }} />
+      <p style={{ marginTop: '0px', fontSize: '24px', fontWeight: '500', color: '#e5e7eb' }}>
+        Machine Learning-Powered Energy Load Forecasting System
+      </p>
+      <p style={{ marginTop: '0px', fontSize: '16px', color: '#9ca3af', lineHeight: '1.6' }}>
         Predict electricity grid demand based on weather data using an ensemble of multiple ML models
       </p>
     </div>

@@ -40,6 +40,7 @@ export const processHistoricalData = (data) => {
     date: new Date(item.date),
     load: parseFloat(item.load) || 0,
     temperature_2m: parseFloat(item.temperature_2m) || 0,
+    relative_humidity_2m: parseFloat(item.relative_humidity_2m) || 0,
   })).sort((a, b) => a.date - b.date);
 };
 
@@ -73,40 +74,91 @@ export const processCorrelationMatrix = (correlationData) => {
 
 /**
  * Prepare forecast data for chart display
+ * Uses actual weather forecast dates to align forecast properly
  */
 export const prepareForecastChartData = (historicalData, forecastData, weatherForecast) => {
   const chartData = [];
+  const now = new Date();
 
-  // Add historical data
+  // Add historical data (up to current time)
   if (historicalData && Array.isArray(historicalData)) {
     historicalData.forEach(item => {
-      chartData.push({
-        date: new Date(item.date),
-        load: parseFloat(item.load) || 0,
-        type: 'historical'
-      });
+      const itemDate = new Date(item.date);
+      // Only include historical data up to current time
+      if (itemDate <= now) {
+        const loadValue = parseFloat(item.load);
+        // Only add if load is a valid positive number
+        if (!isNaN(loadValue) && loadValue > 0) {
+          chartData.push({
+            date: itemDate,
+            load: loadValue,
+            type: 'historical',
+            temperature_2m: parseFloat(item.temperature_2m) || null,
+            relative_humidity_2m: parseFloat(item.relative_humidity_2m) || null
+          });
+        }
+      }
     });
   }
 
-  // Add forecast data
-  if (forecastData && Array.isArray(forecastData.forecast)) {
-    const lastHistoricalDate = chartData.length > 0 
-      ? chartData[chartData.length - 1].date 
-      : new Date();
-
+  // Add forecast data using weather forecast dates
+  if (forecastData && Array.isArray(forecastData.forecast) && weatherForecast && Array.isArray(weatherForecast)) {
     forecastData.forecast.forEach((value, index) => {
-      const forecastDate = new Date(lastHistoricalDate);
-      forecastDate.setHours(forecastDate.getHours() + index + 1);
+      let forecastDate;
       
-      chartData.push({
-        date: forecastDate,
-        load: parseFloat(value) || 0,
-        type: 'forecast'
-      });
+      // Use weather forecast date if available and it's in the future
+      if (weatherForecast[index] && weatherForecast[index].date) {
+        forecastDate = new Date(weatherForecast[index].date);
+        // Only add if it's in the future
+        if (forecastDate > now) {
+          const loadValue = parseFloat(value);
+          // Only add if load is a valid positive number
+          if (!isNaN(loadValue) && loadValue > 0) {
+            chartData.push({
+              date: forecastDate,
+              load: loadValue,
+              type: 'forecast',
+              temperature_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].temperature_2m) || null) : null,
+              relative_humidity_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].relative_humidity_2m) || null) : null
+            });
+          }
+        }
+      } else {
+        // Fallback: calculate from current time
+        forecastDate = new Date(now);
+        forecastDate.setHours(forecastDate.getHours() + index + 1);
+        const loadValue = parseFloat(value);
+        // Only add if load is a valid positive number
+        if (!isNaN(loadValue) && loadValue > 0) {
+          chartData.push({
+            date: forecastDate,
+            load: loadValue,
+            type: 'forecast',
+            temperature_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].temperature_2m) || null) : null,
+            relative_humidity_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].relative_humidity_2m) || null) : null
+          });
+        }
+      }
     });
   }
 
   return chartData.sort((a, b) => a.date - b.date);
+};
+
+/**
+ * Get current time in ISO format
+ */
+export const getCurrentTime = () => {
+  return new Date().toISOString();
+};
+
+/**
+ * Get date N hours from now
+ */
+export const getDateNHoursFromNow = (hours) => {
+  const date = new Date();
+  date.setHours(date.getHours() + hours);
+  return date;
 };
 
 /**

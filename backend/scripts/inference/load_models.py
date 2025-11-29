@@ -166,6 +166,29 @@ def load_lstm(device: str = 'cpu'):
     return model, scaler_X, scaler_y, metadata
 
 
+def load_sarimax():
+    """Load SARIMAX model, scaler, and metadata."""
+    model_path = MODELS_DIR / 'sarimax.pkl'
+    scaler_path = MODELS_DIR / 'sarimax_scaler.pkl'
+    metadata_path = MODELS_DIR / 'sarimax_metadata.pkl'
+    
+    if not model_path.exists():
+        return None, None, None
+    
+    with open(model_path, 'rb') as f:
+        model = pickle.load(f)
+        
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
+        
+    metadata = None
+    if metadata_path.exists():
+        with open(metadata_path, 'rb') as f:
+            metadata = pickle.load(f)
+            
+    return model, scaler, metadata
+
+
 def load_model_comparison() -> Optional[Dict]:
     """Load model comparison report."""
     comparison_path = MODELS_DIR / 'model_comparison.json'
@@ -231,6 +254,14 @@ def load_all_available_models(device: str = 'cpu') -> Dict[str, Any]:
             'scaler_y': lstm_scaler_y,
             'metadata': lstm_metadata
         }
+
+    # SARIMAX
+    sarimax_model, sarimax_scaler, sarimax_metadata = load_sarimax()
+    if sarimax_model is not None:
+        models['sarimax'] = {
+            'model': sarimax_model,
+            'scaler': sarimax_scaler,
+            'metadata': sarimax_metadata
+        }
     
     return models
-

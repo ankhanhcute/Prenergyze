@@ -15,7 +15,10 @@ const VisualizationPage = () => {
     <>
       <HistoricalDataChart />
       <CorrelationHeatmap />
-      <WeatherForecastSelector onWeatherDataFetched={handleWeatherDataFetched} />
+      <WeatherForecastSelector 
+        onWeatherDataFetched={handleWeatherDataFetched}
+        autoFetch={false}
+      />
       <ForecastChart weatherData={weatherData} />
     </>
   );
