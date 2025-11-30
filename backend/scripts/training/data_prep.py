@@ -82,7 +82,10 @@ def engineer_features(
         df['load_lag_3h'] = load_series.shift(3)
         df['load_lag_24h'] = load_series.shift(24)
         df['load_lag_25h'] = load_series.shift(25)
+        df['load_lag_48h'] = load_series.shift(48)
+        df['load_lag_72h'] = load_series.shift(72)
         df['load_lag_168h'] = load_series.shift(168)
+        df['load_lag_336h'] = load_series.shift(336)
     
     # Wind direction features
     if 'wind_dir_cos_10m' in df.columns:
@@ -167,8 +170,8 @@ def load_and_prepare_data(data_path: str) -> pd.DataFrame:
     # Drop rows with NaN (from shifting)
     data.dropna(inplace=True)
     
-    # Remove first 168 rows to ensure rolling windows are properly initialized
-    data = data.iloc[168:].reset_index(drop=True)
+    # Remove first 336 rows to ensure rolling windows and lag features are properly initialized
+    data = data.iloc[336:].reset_index(drop=True)
     
     return data
 

@@ -28,3 +28,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 .env
+
+# Models (Large files)
+backend/models/*.pkl
+backend/models/*.pth

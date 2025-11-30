@@ -10,7 +10,7 @@ const NavigationCard = () => {
         ML models with real-time weather forecasts.
       </p>
       <Link to="/visualizations" className="btn" style={{ textDecoration: 'none', display: 'inline-block' }}>
-        Go to Visualizations →
+        Go to Data →
       </Link>
     </div>
   );

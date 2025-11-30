@@ -19,10 +19,22 @@ const Navbar = () => {
             Home
           </Link>
           <Link 
-            to="/visualizations" 
-            className={location.pathname === '/visualizations' ? 'active' : ''}
+            to="/data" 
+            className={location.pathname === '/data' ? 'active' : ''}
+          > 
+            Data
+          </Link>
+          <Link 
+            to="/forecast" 
+            className={location.pathname === '/forecast' ? 'active' : ''}
           >
-            Visualizations
+            Forecast
+          </Link>
+          <Link 
+            to="/models" 
+            className={location.pathname === '/models' ? 'active' : ''}
+          >
+            Models
           </Link>
         </div>
       </div>

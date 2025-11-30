@@ -128,7 +128,8 @@ const ForecastChart = ({ weatherData }) => {
 
       const forecast = await getForecast(validWeatherData, {
         useEnsemble: true,
-        historicalLoad: lastHistoricalLoads.length > 0 ? lastHistoricalLoads : null
+        historicalLoad: lastHistoricalLoads.length > 0 ? lastHistoricalLoads : null,
+        selectedModels: JSON.parse(localStorage.getItem('prenergyze_selected_models') || 'null')
       });
 
       // Validate forecast values - filter out unrealistic predictions
@@ -192,9 +193,9 @@ const ForecastChart = ({ weatherData }) => {
           // For subsequent values: apply exponential smoothing to maintain wave pattern
           else if (index > 0) {
             const prevVal = validatedForecast[index - 1];
-            // Exponential smoothing: 70% current prediction, 30% previous value
-            // This maintains continuity and wave pattern
-            numVal = numVal * 0.7 + prevVal * 0.3;
+            // Exponential smoothing: 90% current prediction, 10% previous value
+            // Reduced smoothing to allow for sharper transitions (like morning dips)
+            numVal = numVal * 0.9 + prevVal * 0.1;
           }
           
           validatedForecast.push(numVal);
@@ -448,7 +449,7 @@ const ForecastChart = ({ weatherData }) => {
       {!weatherData && (
         <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '12px' }}>
           <p style={{ margin: 0, fontSize: '14px', color: '#a78bfa' }}>
-            <strong>Note:</strong> Fetch weather forecast data using the selector above to generate predictions for the next few hours.
+            <strong>Note:</strong> Fetch weather forecast data using the selector to the left to generate predictions for the next few hours.
           </p>
         </div>
       )}

@@ -63,10 +63,11 @@ export const getForecast = async (weatherData, options = {}) => {
 
 /**
  * Get historical data
+ * @param {Object} params - Query parameters (start_date, end_date, limit)
  */
-export const getHistoricalData = async () => {
+export const getHistoricalData = async (params = {}) => {
   try {
-    const response = await api.get('/data/historical');
+    const response = await api.get('/data/historical', { params });
     return response.data;
   } catch (error) {
     throw new Error(`Failed to fetch historical data: ${error.message}`);

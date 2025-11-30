@@ -15,18 +15,25 @@ const HistoricalDataChart = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const historicalData = await getHistoricalData();
+        // Fetch a larger dataset to allow scrolling back to beginning (50000 records)
+        const historicalData = await getHistoricalData({ limit: 50000 });
         const processed = processHistoricalData(historicalData);
         setData(processed);
-        setFilteredData(processed);
         
-        // Set default date range (last 30 days)
+        // Set default date range to the full available range initially
+        // The user can then zoom in/filter
         if (processed.length > 0) {
           const end = new Date(processed[processed.length - 1].date);
-          const start = new Date(end);
-          start.setDate(start.getDate() - 30);
+          const start = new Date(processed[0].date); // Start from the beginning
+          
           setStartDate(formatDateForAPI(start));
           setEndDate(formatDateForAPI(end));
+          setFilteredData(processed); // Show all data by default or maybe last year?
+          
+          // Let's show the full range but maybe we should downsample for performance if too large?
+          // Recharts can handle a few thousand points, but 17k might be heavy.
+          // But user asked to "go back to the beginning".
+          // Let's default to showing everything if it's not crazy large, or let them filter.
         }
         setError(null);
       } catch (err) {
@@ -42,7 +49,13 @@ const HistoricalDataChart = () => {
   useEffect(() => {
     if (startDate && endDate && data.length > 0) {
       const filtered = filterByDateRange(data, startDate, endDate);
-      setFilteredData(filtered);
+      // Downsample if too many points to keep chart responsive
+      if (filtered.length > 2000) {
+        const rate = Math.ceil(filtered.length / 2000);
+        setFilteredData(filtered.filter((_, i) => i % rate === 0));
+      } else {
+        setFilteredData(filtered);
+      }
     } else {
       setFilteredData(data);
     }

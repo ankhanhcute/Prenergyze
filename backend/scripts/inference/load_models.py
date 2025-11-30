@@ -167,26 +167,34 @@ def load_lstm(device: str = 'cpu'):
 
 
 def load_sarimax():
-    """Load SARIMAX model, scaler, and metadata."""
+    """Load SARIMAX model, scalers, and metadata."""
     model_path = MODELS_DIR / 'sarimax.pkl'
-    scaler_path = MODELS_DIR / 'sarimax_scaler.pkl'
+    scaler_X_path = MODELS_DIR / 'sarimax_scaler.pkl'
+    scaler_y_path = MODELS_DIR / 'sarimax_scaler_y.pkl'
     metadata_path = MODELS_DIR / 'sarimax_metadata.pkl'
     
     if not model_path.exists():
-        return None, None, None
+        return None, None, None, None
     
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
         
-    with open(scaler_path, 'rb') as f:
-        scaler = pickle.load(f)
+    scaler_X = None
+    if scaler_X_path.exists():
+        with open(scaler_X_path, 'rb') as f:
+            scaler_X = pickle.load(f)
+
+    scaler_y = None
+    if scaler_y_path.exists():
+        with open(scaler_y_path, 'rb') as f:
+            scaler_y = pickle.load(f)
         
     metadata = None
     if metadata_path.exists():
         with open(metadata_path, 'rb') as f:
             metadata = pickle.load(f)
             
-    return model, scaler, metadata
+    return model, scaler_X, scaler_y, metadata
 
 
 def load_model_comparison() -> Optional[Dict]:
@@ -256,11 +264,13 @@ def load_all_available_models(device: str = 'cpu') -> Dict[str, Any]:
         }
 
     # SARIMAX
-    sarimax_model, sarimax_scaler, sarimax_metadata = load_sarimax()
+    sarimax_model, sarimax_scaler_X, sarimax_scaler_y, sarimax_metadata = load_sarimax()
     if sarimax_model is not None:
         models['sarimax'] = {
             'model': sarimax_model,
-            'scaler': sarimax_scaler,
+            'scaler': sarimax_scaler_X,  # Backwards compatibility key (usually means scaler_X)
+            'scaler_X': sarimax_scaler_X,
+            'scaler_y': sarimax_scaler_y,
             'metadata': sarimax_metadata
         }
     

@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
 import EntryPage from './pages/EntryPage';
-import VisualizationPage from './pages/VisualizationPage';
+import DataPage from './pages/DataPage';
+import ForecastPage from './pages/ForecastPage';
+import ModelInfoPage from './pages/ModelInfoPage';
 
 function App() {
   return (
@@ -9,7 +11,9 @@ function App() {
       <Layout>
         <Routes>
           <Route path="/" element={<EntryPage />} />
-          <Route path="/visualizations" element={<VisualizationPage />} />
+          <Route path="/data" element={<DataPage />} />
+          <Route path="/forecast" element={<ForecastPage />} />
+          <Route path="/models" element={<ModelInfoPage />} />
         </Routes>
       </Layout>
     </Router>

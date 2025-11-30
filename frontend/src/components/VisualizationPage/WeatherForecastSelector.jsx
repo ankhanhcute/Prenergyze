@@ -36,7 +36,8 @@ const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) =>
     if (autoFetch) {
       handleFetchWeather();
     }
-  }, [autoFetch, handleFetchWeather]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFetch]); // Run only when autoFetch changes (effectively once on mount if true)
 
   return (
     <div className="card">

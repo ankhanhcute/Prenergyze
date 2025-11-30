@@ -103,11 +103,11 @@ class ForecastService:
             
             if data_path.exists():
                 # Load enough history to cover largest lag (168h) + buffer
-                # Loading last 336 hours (2 weeks)
+                # Loading last 720 hours (30 days) to cover extended lags (336h) + buffer
                 full_hist_df = pd.read_csv(data_path, low_memory=False)
                 full_hist_df['date'] = pd.to_datetime(full_hist_df['date'])
                 full_hist_df = full_hist_df.sort_values('date')
-                hist_df = full_hist_df.tail(336).copy().reset_index(drop=True)
+                hist_df = full_hist_df.tail(720).copy().reset_index(drop=True)
         except Exception as e:
             print(f"Warning: Failed to load historical context: {e}")
         
@@ -240,6 +240,24 @@ class ForecastService:
                     val = float(pred[0])
                     indivs = {k: float(v[0]) for k, v in indiv_preds.items()}
                 
+                # Business Logic: Apply Morning Dip Adjustment
+                # Historical data shows lower load between 9 AM and 12 PM
+                # We apply a reduction factor to enforce this pattern
+                try:
+                    current_date = pd.to_datetime(next_step_weather['date'].values[0])
+                    current_hour = current_date.hour
+                    
+                    if 9 <= current_hour <= 12:
+                        # Apply 7% reduction
+                        val = val * 0.93
+                        
+                        # Also adjust individual predictions for consistency
+                        for k in indivs:
+                            indivs[k] = indivs[k] * 0.93
+                except Exception as e:
+                    # If date parsing fails, skip adjustment
+                    pass
+                
                 # Enforce constraints
                 val = max(val, min_load)
                 val = min(val, 50000.0) # Cap at 50GW
@@ -259,9 +277,9 @@ class ForecastService:
                 current_df = pd.concat([current_df, next_step_weather], ignore_index=True)
                 
                 # Optimization: Keep dataframe size manageable
-                # We only need enough history for max lag (168h)
-                if len(current_df) > 500:
-                    current_df = current_df.iloc[-336:].reset_index(drop=True)
+                # We need enough history for max lag (336h)
+                if len(current_df) > 1000:
+                    current_df = current_df.iloc[-720:].reset_index(drop=True)
                     
             except Exception as e:
                 print(f"Error in forecast step {i}: {e}")
@@ -369,6 +387,11 @@ class ForecastService:
     def get_model_info(self) -> Dict:
         """Get information about loaded models."""
         try:
+            # Reload metadata from file to ensure it's up to date
+            comparison = load_model_comparison()
+            if comparison:
+                self.model_metadata = comparison.get('models', {})
+                
             available_models = self.get_available_models()
             ensemble_models = self.ensemble.model_names if self.ensemble and hasattr(self.ensemble, 'model_names') else []
             return {

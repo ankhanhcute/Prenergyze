@@ -48,12 +48,17 @@ def train_sarimax():
     # to avoid multicollinearity and overfitting
     
     # Select key exogenous features (weather)
-    # Remove lag features of the target (load) because SARIMAX handles AR terms internally
+    # We are adding explicit lag features as exogenous variables to help capture specific cyclical patterns.
+    # Since we are using these strong lag predictors, we will simplify the internal ARIMA structure
+    # to act as a Regression with ARIMA errors (ARIMAX).
     exog_features = [
         'temperature_2m', 'relative_humidity_2m', 'apparent_temperature',
         'precipitation', 'cloud_cover', 'wind_speed_10m',
-        'hour', 'day_of_week', 'month'  # Time features are good exogenous variables
+        'hour', 'day_of_week', 'month',  # Time features
+        'load_lag_24h', 'load_lag_48h', 'load_lag_72h', 'load_lag_168h', 'load_lag_336h'
     ]
+    
+    print(f"Using features: {exog_features}")
     
     # Filter data to keep only load and exogenous features
     # Also ensure we have a datetime index for statsmodels
@@ -72,11 +77,16 @@ def train_sarimax():
     y_test = test_data['load']
     
     # Scale exogenous features
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    scaler_X = StandardScaler()
+    X_train_scaled = scaler_X.fit_transform(X_train)
+    X_test_scaled = scaler_X.transform(X_test)
     
-    # Convert back to DataFrame for convenience (optional, but good for keeping track)
+    # Scale target (endogenous) - Helpful for optimization convergence
+    scaler_y = StandardScaler()
+    y_train_scaled = scaler_y.fit_transform(y_train.values.reshape(-1, 1)).flatten()
+    y_test_scaled = scaler_y.transform(y_test.values.reshape(-1, 1)).flatten()
+    
+    # Convert back to DataFrame for convenience
     X_train_scaled = pd.DataFrame(X_train_scaled, columns=exog_features, index=X_train.index)
     X_test_scaled = pd.DataFrame(X_test_scaled, columns=exog_features, index=X_test.index)
     
@@ -86,24 +96,23 @@ def train_sarimax():
     start_time = time.time()
     
     # SARIMAX configuration
-    # Order (p,d,q): (1, 0, 1) - simple ARMA model for the residuals
-    # Seasonal Order (P,D,Q,s): (1, 1, 1, 24) - Daily seasonality (24 hours)
-    # Note: Seasonal training can be very slow. We might simplify for this demo.
-    # Simplified: (1, 0, 1) with no seasonality in the AR part, rely on exogenous 'hour' feature for seasonality
-    # This is much faster and often sufficient when we have strong exogenous predictors like temperature and hour.
+    # We use a simplified ARIMA structure (Regression with AR(1) errors) because the 
+    # exogenous lag variables (24h, 168h, 336h) now handle the heavy lifting of seasonality.
+    # This is more robust and aligns with how the other models (XGBoost, etc.) work.
     
-    # If we rely on 'hour' and 'day_of_week' as exogenous, we can often use a simpler ARIMA error structure.
     model = SARIMAX(
-        endog=y_train,
+        endog=y_train_scaled,
         exog=X_train_scaled,
-        order=(1, 0, 1),
-        seasonal_order=(0, 0, 0, 0), # Disable internal seasonality for speed, rely on exog features
-        enforce_stationarity=False,
-        enforce_invertibility=False
+        order=(1, 0, 0),  # Simple AR(1) for residual correlation
+        seasonal_order=(0, 0, 0, 0),  # Disable internal seasonality in favor of explicit lag features
+        trend='c', # Explicitly include intercept
+        enforce_stationarity=True, # Enforce stationarity for stability
+        enforce_invertibility=True
     )
     
     # Fit model
-    sarimax_model = model.fit(disp=False)
+    print("Fitting model...")
+    sarimax_model = model.fit(disp=True)
     
     train_time = time.time() - start_time
     print(f"Training completed in {train_time:.2f} seconds")
@@ -113,31 +122,7 @@ def train_sarimax():
     start_inference = time.time()
     
     # Predict on test set
-    # The gap logic in get_train_test_split leaves a gap between train and test
-    # SARIMAX.predict(start, end) expects indices relative to the training data start
-    # Or datetime values if index is datetime.
-    
-    # Statsmodels predict is tricky with gaps.
-    # We will perform one-step ahead prediction for the test set duration,
-    # but since we trained on data UP TO the test set (minus gap), 
-    # we need to handle the gap or just predict for the test timestamps.
-    
-    # We will use the forecast method which is easier for out-of-sample
-    # But first we need to make sure we are aligned.
-    
-    # Since we are using a simple split without retraining on the gap,
-    # we should ideally re-fit or use 'append' but that's complex.
-    # For this MVP, we will just predict for the test period using the provided exogenous vars.
-    
-    # Note: The error "Required (1968, 9), got (1800, 9)" suggests statsmodels expects
-    # data for the gap period too if we predict from train_end to test_end.
-    # 1968 = 1800 (test_size) + 168 (gap).
-    
-    # Solution: We must provide exog for the gap period as well to predict into the test set.
-    # Or, we can just evaluate on the last N points if we only care about test performance.
-    
-    # Let's construct the full exog matrix from the end of training to the end of testing
-    # This includes the gap.
+    # ... logic for handling gap ...
     
     # Recover the gap data from the original dataset
     # train_data ends at index X
@@ -149,17 +134,20 @@ def train_sarimax():
     # Get exog for the gap + test period
     # We need to go back to the original 'data' dataframe
     full_exog_subset = data.loc[train_end_idx+1 : test_end_idx, exog_features]
-    full_exog_scaled = scaler.transform(full_exog_subset)
+    full_exog_scaled = scaler_X.transform(full_exog_subset)
     
     # Predict for the full range (gap + test)
-    full_pred = sarimax_model.predict(
+    full_pred_scaled = sarimax_model.predict(
         start=len(train_data),
         end=len(train_data) + len(full_exog_subset) - 1,
         exog=full_exog_scaled
     )
     
     # Extract only the test part (the last 1800 points)
-    y_pred = full_pred.iloc[-len(y_test):]
+    y_pred_scaled = full_pred_scaled.iloc[-len(y_test):]
+    
+    # Inverse transform predictions
+    y_pred = scaler_y.inverse_transform(y_pred_scaled.values.reshape(-1, 1)).flatten()
     
     inference_time = (time.time() - start_inference) * 1000 / len(y_test) # ms per sample
     
@@ -180,10 +168,19 @@ def train_sarimax():
     with open(model_path, 'wb') as f:
         pickle.dump(sarimax_model, f)
         
-    # Save scaler
+    # Save scaler X
     scaler_path = MODELS_DIR / 'sarimax_scaler.pkl'
     with open(scaler_path, 'wb') as f:
-        pickle.dump(scaler, f)
+        pickle.dump(scaler_X, f)
+
+    # Save scaler y (NEW) - ForecastService needs to know about this!
+    # Actually, ForecastService currently expects only 'sarimax_scaler.pkl' for X scaling?
+    # We might need to update ForecastService if we introduce a Y scaler.
+    # For now, let's overwrite 'sarimax_scaler.pkl' with scaler_X as before, 
+    # and save scaler_y separately.
+    scaler_y_path = MODELS_DIR / 'sarimax_scaler_y.pkl'
+    with open(scaler_y_path, 'wb') as f:
+        pickle.dump(scaler_y, f)
     
     # Save metadata
     metadata = {
@@ -194,7 +191,7 @@ def train_sarimax():
         'test_r2': float(r2),
         'inference_time_ms': inference_time,
         'train_time_seconds': train_time,
-        'order': (1, 0, 1),
+        'order': (1, 0, 0),
         'seasonal_order': (0, 0, 0, 0)
     }
     
