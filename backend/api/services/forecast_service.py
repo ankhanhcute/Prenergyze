@@ -8,8 +8,8 @@ from pathlib import Path
 import sys
 
 # Add scripts to path
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # This gives 'backend/'
-sys.path.insert(0, str(BASE_DIR / 'scripts' / 'inference'))
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent  # This gives 'backend/'
+sys.path.insert(0, str(BASE_DIR / 'backend' / 'scripts' / 'inference'))
 
 from ensemble import EnsembleModel, create_ensemble_from_comparison
 from preprocess import prepare_features_for_inference, align_features
@@ -95,11 +95,7 @@ class ForecastService:
         hist_df = pd.DataFrame()
         try:
             data_path = BASE_DIR / 'data' / 'processed' / 'FEATURE_ENGINEERED_DATASET.csv'
-            if not data_path.exists():
-                # Try alternative paths
-                alt_path = BASE_DIR.parent / 'backend' / 'data' / 'processed' / 'FEATURE_ENGINEERED_DATASET.csv'
-                if alt_path.exists():
-                    data_path = alt_path
+            
             
             if data_path.exists():
                 # Load enough history to cover largest lag (168h) + buffer
