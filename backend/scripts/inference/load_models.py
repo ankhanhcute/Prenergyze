@@ -196,6 +196,16 @@ def load_sarimax():
             
     return model, scaler_X, scaler_y, metadata
 
+def load_catboost():
+    """Load CatBoost model"""
+    model_path = MODELS_DIR / 'catboost.pkl'
+    if not model_path.exists():
+        return None, None
+    
+    with open(model_path, 'rb') as f:
+        model = pickle.load(f)
+    return model, None
+
 
 def load_model_comparison() -> Optional[Dict]:
     """Load model comparison report."""
@@ -273,5 +283,12 @@ def load_all_available_models(device: str = 'cpu') -> Dict[str, Any]:
             'scaler_y': sarimax_scaler_y,
             'metadata': sarimax_metadata
         }
-    
+    #CatBoost
+    cb_model, cb_metadata = load_catboost()   # cb_metadata will be None
+    if cb_model is not None:
+        models['catboost'] = {
+            'model': cb_model,
+            'scaler': None,
+            'metadata': cb_metadata
+        }
     return models
