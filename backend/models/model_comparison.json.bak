@@ -1,0 +1,102 @@
+{
+  "timestamp": "2025-11-30T08:03:33.667801",
+  "models": {
+    "linear_regression": {
+      "cv_rmse": 784.6995913307014,
+      "cv_mae": 543.8841901731889,
+      "cv_r2": 0.9530019870153109,
+      "cv_inference_time_ms": 0.0025147199630737305,
+      "test_rmse": 762.7205725054372,
+      "status": "success"
+    },
+    "random_forest": {
+      "cv_rmse": 940.6496972902037,
+      "cv_mae": 667.1976657196368,
+      "cv_r2": 0.9200722561032049,
+      "cv_inference_time_ms": 0.3895151615142822,
+      "test_rmse": 626.4724788140003,
+      "status": "success"
+    },
+    "xgboost": {
+      "cv_rmse": 1019.3644547809266,
+      "cv_mae": 719.4755239529079,
+      "cv_r2": 0.9031212005261642,
+      "cv_inference_time_ms": 0.07136940956115723,
+      "test_rmse": 629.1799762478662,
+      "status": "success"
+    },
+    "lightgbm": {
+      "cv_rmse": 885.683204115337,
+      "cv_mae": 621.7330609349999,
+      "cv_r2": 0.931795968448963,
+      "cv_inference_time_ms": 0.03502607345581055,
+      "test_rmse": 653.1032252488938,
+      "status": "success"
+    },
+    "lstm": {
+      "cv_rmse": 1125.638772629382,
+      "cv_mae": 855.5368194580078,
+      "cv_r2": 0.8933653682470322,
+      "cv_inference_time_ms": 0.02749800682067871,
+      "test_rmse": 692.9496284002179,
+      "status": "success"
+    },
+    "sarimax": {
+      "test_rmse": 3464.132297670361,
+      "test_mae": 2808.0511761311327,
+      "test_r2": 0.3490393852706326,
+      "inference_time_ms": 0.020209418402777776,
+      "status": "success"
+    }
+  },
+  "ranking": [
+    {
+      "model": "random_forest",
+      "test_rmse": 626.4724788140003,
+      "test_mae": Infinity,
+      "test_r2": -Infinity,
+      "inference_time_ms": 0,
+      "rank": 1
+    },
+    {
+      "model": "xgboost",
+      "test_rmse": 629.1799762478662,
+      "test_mae": Infinity,
+      "test_r2": -Infinity,
+      "inference_time_ms": 0,
+      "rank": 2
+    },
+    {
+      "model": "lightgbm",
+      "test_rmse": 653.1032252488938,
+      "test_mae": Infinity,
+      "test_r2": -Infinity,
+      "inference_time_ms": 0,
+      "rank": 3
+    },
+    {
+      "model": "lstm",
+      "test_rmse": 692.9496284002179,
+      "test_mae": Infinity,
+      "test_r2": -Infinity,
+      "inference_time_ms": 0,
+      "rank": 4
+    },
+    {
+      "model": "linear_regression",
+      "test_rmse": 762.7205725054372,
+      "test_mae": Infinity,
+      "test_r2": -Infinity,
+      "inference_time_ms": 0,
+      "rank": 5
+    },
+    {
+      "model": "sarimax",
+      "test_rmse": 3464.132297670361,
+      "test_mae": 2808.0511761311327,
+      "test_r2": 0.3490393852706326,
+      "inference_time_ms": 0.020209418402777776,
+      "rank": 6
+    }
+  ]
+}

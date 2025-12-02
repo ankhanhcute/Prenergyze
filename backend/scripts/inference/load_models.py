@@ -204,7 +204,7 @@ def load_catboost():
     
     with open(model_path, 'rb') as f:
         model = pickle.load(f)
-    return model, None
+    return model, {}  # Return empty dict instead of None
 
 
 def load_model_comparison() -> Optional[Dict]:

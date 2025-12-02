@@ -1,0 +1,148 @@
+
+.weather-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+
+.weather-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.weather-layer.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.theme-night {
+  background: linear-gradient(to bottom, #020111 10%, #191621 100%);
+}
+
+.stars {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.star-small,
+.star-medium,
+.star-large {
+  border-radius: 50%;
+  background: #FFF;
+  position: absolute;
+  animation: twinkle 2s infinite ease-in-out alternate;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1.2); }
+}
+
+.theme-sunny {
+  background: linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);
+}
+
+.sun {
+  position: absolute;
+  top: 50px;
+  right: 50px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, #ffd200 20%, #f7971e 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 40px #f7971e;
+  animation: sun-pulse 4s infinite alternate;
+}
+
+@keyframes sun-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 40px #f7971e; }
+  100% { transform: scale(1.1); box-shadow: 0 0 60px #ffeb3b; }
+}
+
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50px;
+  animation: cloud-move linear infinite;
+}
+
+.cloud::after, .cloud::before {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+@keyframes cloud-move {
+  from { left: -200px; }
+  to { left: 100%; }
+}
+
+.theme-rainy {
+  background: linear-gradient(to bottom, #203a43 0%, #2c5364 100%);
+}
+
+.rain {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.2));
+  opacity: 0.6;
+}
+
+.drop {
+  position: absolute;
+  width: 2px;
+  height: 15px;
+  background: rgba(255, 255, 255, 0.4);
+  animation: rain-fall 0.7s linear infinite;
+}
+
+@keyframes rain-fall {
+  0% { transform: translateY(-10vh); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.dark-cloud {
+  background: rgba(100, 110, 120, 0.6) !important;
+}
+
+.theme-overcast {
+  background: linear-gradient(to bottom, #757f9a 0%, #d7dde8 100%);
+}
+
+.fog {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: url('https://raw.githubusercontent.com/danielstuart14/CSS_FOG_ANIMATION/master/fog1.png') repeat-x;
+  background-size: contain;
+  animation: fog-move 60s linear infinite;
+  opacity: 0.4;
+}
+
+@keyframes fog-move {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+

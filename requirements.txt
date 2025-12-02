@@ -18,14 +18,12 @@ torch
 
 holidays
 
-# New dependencies for ensemble models
 xgboost
 lightgbm
+catboost
 
-# API dependencies
 fastapi
 uvicorn[standard]
 pydantic
 
-# Testing
 pytest

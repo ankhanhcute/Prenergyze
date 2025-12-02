@@ -1,7 +1,7 @@
 const ResearchAbstract = () => {
   return (
     <div className="card">
-      <h2>Research Abstract</h2>
+      <h2>Project Information</h2>
       <div style={{ lineHeight: '1.8', color: '#d1d5db' }}>
         <p style={{ marginBottom: '20px' }}>
           <strong style={{ color: '#a78bfa' }}>Problem Statement:</strong> Accurate energy load forecasting is critical for 
@@ -10,10 +10,11 @@ const ResearchAbstract = () => {
           weather patterns and energy demand.
         </p>
         <p style={{ marginBottom: '20px' }}>
-          <strong style={{ color: '#a78bfa' }}>Methodology:</strong> This system employs an ensemble approach combining 
-          predictions from five machine learning models: Linear Regression, Random Forest, 
-          XGBoost, LightGBM, and LSTM. The ensemble uses inverse RMSE weighting to combine 
-          predictions from the top-performing models, balancing accuracy and inference speed.
+          <strong style={{ color: '#a78bfa' }}>Methodology:</strong> This system employs an advanced ensemble strategy, combining 
+          predictions from Linear Regression, Random Forest, XGBoost, LightGBM, LSTM, and SARIMAX. 
+          We utilize a recursive forecasting approach with dynamic lag features to capture complex cyclical patterns. 
+          The ensemble uses a hybrid weighting system that prioritizes low-RMSE models while ensuring seasonal 
+          models (SARIMAX) contribute to the long-term wave structure.
         </p>
         <p style={{ marginBottom: '20px' }}>
           <strong style={{ color: '#a78bfa' }}>Data Sources:</strong> The system integrates comprehensive weather metrics from 

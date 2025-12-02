@@ -41,7 +41,7 @@ export const fetchWeatherForecast = async (lat, lon, forecastHours = 24, startDa
       latitude: lat.toString(),
       longitude: lon.toString(),
       hourly: hourlyParams.join(','),
-      forecast_days: Math.ceil(forecastHours / 24), // Open-Meteo uses forecast_days
+      forecast_days: Math.ceil((forecastHours + 24) / 24), // Add buffer day to ensure coverage
     });
 
     // Only add start_date if explicitly provided (otherwise API uses current time)
@@ -67,13 +67,22 @@ export const fetchWeatherForecast = async (lat, lon, forecastHours = 24, startDa
     const timeArray = hourly.time || [];
     const weatherData = [];
     const now = new Date();
+    // Add one hour to current time to start forecast from next hour
+    const forecastStartTime = new Date(now);
+    forecastStartTime.setHours(now.getHours() + 1, 0, 0, 0);
 
     for (let i = 0; i < timeArray.length; i++) {
       const dataTime = new Date(timeArray[i]);
       
       // Only include future forecast data (skip historical/past data)
-      if (dataTime <= now) {
+      // And ensure we don't exceed the requested forecast hours
+      if (dataTime < forecastStartTime) {
         continue;
+      }
+      
+      // Limit to exact number of requested hours
+      if (weatherData.length >= forecastHours) {
+        break;
       }
       
       const windDir = hourly.wind_direction_10m?.[i] || 0;

@@ -1,12 +1,18 @@
 import { useState, useCallback } from 'react';
 import WeatherForecastSelector from '../components/VisualizationPage/WeatherForecastSelector';
 import ForecastChart from '../components/VisualizationPage/ForecastChart';
+import DailyForecastChart from '../components/VisualizationPage/DailyForecastChart';
 
 const ForecastPage = () => {
   const [weatherData, setWeatherData] = useState(null);
+  const [forecastData, setForecastData] = useState(null);
 
   const handleWeatherDataFetched = useCallback((data) => {
     setWeatherData(data);
+  }, []);
+
+  const handleForecastGenerated = useCallback((data) => {
+    setForecastData(data);
   }, []);
 
   return (
@@ -18,11 +24,16 @@ const ForecastPage = () => {
         />
       </div>
       <div>
-        <ForecastChart weatherData={weatherData} />
+        <ForecastChart 
+          weatherData={weatherData} 
+          onForecastGenerated={handleForecastGenerated}
+        />
+      </div>
+      <div>
+        <DailyForecastChart forecastData={forecastData} />
       </div>
     </div>
   );
 };
 
 export default ForecastPage;
-

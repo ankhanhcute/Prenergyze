@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { getRecentHistoricalData, getForecast } from '../../services/api';
-import { processHistoricalData, prepareForecastChartData, getCurrentTime } from '../../utils/dataProcessing';
+import { processHistoricalData, prepareForecastChartData } from '../../utils/dataProcessing';
 
-const ForecastChart = ({ weatherData }) => {
+const ForecastChart = ({ weatherData, onForecastGenerated }) => {
   const [historicalData, setHistoricalData] = useState([]);
   const [forecastData, setForecastData] = useState(null);
   const [chartData, setChartData] = useState([]);
@@ -204,6 +204,11 @@ const ForecastChart = ({ weatherData }) => {
       }
 
       setForecastData(forecast);
+      
+      // Pass forecast data up to parent
+      if (onForecastGenerated) {
+        onForecastGenerated(forecast);
+      }
 
       // Combine historical and forecast data
       const combined = prepareForecastChartData(historicalData, forecast, weatherData);
@@ -368,6 +373,7 @@ const ForecastChart = ({ weatherData }) => {
             label={{ value: 'Load (MW)', angle: -90, position: 'insideLeft', fill: '#9ca3af' }}
             stroke="#9ca3af"
             tick={{ fill: '#9ca3af' }}
+            domain={['auto', 'auto']}
           />
           {selectedWeather !== 'none' && (
             <YAxis 
@@ -381,6 +387,7 @@ const ForecastChart = ({ weatherData }) => {
               }}
               stroke="#f59e0b"
               tick={{ fill: '#f59e0b' }}
+              domain={['auto', 'auto']}
             />
           )}
           <Tooltip 
@@ -401,7 +408,7 @@ const ForecastChart = ({ weatherData }) => {
               return [`${value.toFixed(2)} MW`, name];
             }}
           />
-          <Legend wrapperStyle={{ color: '#d1d5db' }} />
+          <Legend wrapperStyle={{ color: '#d1d5db' }} verticalAlign="top" />
           <ReferenceLine 
             x={now} 
             yAxisId="load"
@@ -409,27 +416,6 @@ const ForecastChart = ({ weatherData }) => {
             strokeWidth={2}
             strokeDasharray="3 3"
             label={{ value: "Now", position: "topRight", fill: "#a78bfa" }}
-          />
-          <Line 
-            yAxisId="load"
-            type="monotone" 
-            dataKey="historicalLoad" 
-            stroke="#8b5cf6" 
-            strokeWidth={2}
-            dot={false}
-            name="Historical Load"
-            connectNulls={false}
-          />
-          <Line 
-            yAxisId="load"
-            type="monotone" 
-            dataKey="forecastLoad" 
-            stroke="#22c55e" 
-            strokeWidth={2}
-            strokeDasharray="5 5"
-            dot={false}
-            name="Forecasted Load"
-            connectNulls={false}
           />
           {selectedWeather !== 'none' && (
             <Line 
@@ -441,8 +427,35 @@ const ForecastChart = ({ weatherData }) => {
               dot={false}
               name={selectedWeather === 'temperature_2m' ? 'Temperature' : 'Humidity'}
               connectNulls={true}
+              isAnimationActive={false}
+              zIndex={1}
             />
           )}
+          <Line 
+            yAxisId="load"
+            type="monotone" 
+            dataKey="historicalLoad" 
+            stroke="#8b5cf6" 
+            strokeWidth={2}
+            dot={false}
+            name="Historical Load"
+            connectNulls={false}
+            isAnimationActive={false}
+            zIndex={2}
+          />
+          <Line 
+            yAxisId="load"
+            type="monotone" 
+            dataKey="forecastLoad" 
+            stroke="#22c55e" 
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={false}
+            name="Forecasted Load"
+            connectNulls={false}
+            isAnimationActive={false}
+            zIndex={2}
+          />
         </LineChart>
       </ResponsiveContainer>
 
@@ -476,4 +489,3 @@ const ForecastChart = ({ weatherData }) => {
 };
 
 export default ForecastChart;
-

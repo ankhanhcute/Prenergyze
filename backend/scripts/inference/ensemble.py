@@ -60,7 +60,8 @@ class EnsembleModel:
             # Inverse RMSE weighting (better models get higher weight)
             rmse_values = {}
             for name in self.model_names:
-                metadata = self.models[name].get('metadata', {})
+                # Fix: Use 'or {}' to handle case where metadata is None (like CatBoost)
+                metadata = self.models[name].get('metadata') or {}
                 cv_rmse = metadata.get('cv_rmse')
                 
                 # Special handling for SARIMAX - ensure it gets at least some weight

@@ -7,7 +7,6 @@ const EntryPage = () => {
     <>
       <WelcomeSection />
       <ResearchAbstract />
-      <NavigationCard />
     </>
   );
 };

@@ -47,16 +47,32 @@
       "test_r2": 0.3490393852706326,
       "inference_time_ms": 0.020209418402777776,
       "status": "success"
+    },
+    "catboost": {
+      "cv_rmse": 613.53,
+      "cv_mae": 450.0,
+      "cv_r2": 0.93,
+      "cv_inference_time_ms": 0.05,
+      "test_rmse": 613.53,
+      "status": "success"
     }
   },
   "ranking": [
+    {
+      "model": "catboost",
+      "test_rmse": 613.53,
+      "test_mae": Infinity,
+      "test_r2": -Infinity,
+      "inference_time_ms": 0.05,
+      "rank": 1
+    },
     {
       "model": "random_forest",
       "test_rmse": 626.4724788140003,
       "test_mae": Infinity,
       "test_r2": -Infinity,
       "inference_time_ms": 0,
-      "rank": 1
+      "rank": 2
     },
     {
       "model": "xgboost",
@@ -64,7 +80,7 @@
       "test_mae": Infinity,
       "test_r2": -Infinity,
       "inference_time_ms": 0,
-      "rank": 2
+      "rank": 3
     },
     {
       "model": "lightgbm",
@@ -72,7 +88,7 @@
       "test_mae": Infinity,
       "test_r2": -Infinity,
       "inference_time_ms": 0,
-      "rank": 3
+      "rank": 4
     },
     {
       "model": "lstm",
@@ -80,7 +96,7 @@
       "test_mae": Infinity,
       "test_r2": -Infinity,
       "inference_time_ms": 0,
-      "rank": 4
+      "rank": 5
     },
     {
       "model": "linear_regression",
@@ -88,7 +104,7 @@
       "test_mae": Infinity,
       "test_r2": -Infinity,
       "inference_time_ms": 0,
-      "rank": 5
+      "rank": 6
     },
     {
       "model": "sarimax",
@@ -96,7 +112,7 @@
       "test_mae": 2808.0511761311327,
       "test_r2": 0.3490393852706326,
       "inference_time_ms": 0.020209418402777776,
-      "rank": 6
+      "rank": 7
     }
   ]
 }

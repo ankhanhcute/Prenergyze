@@ -78,6 +78,7 @@ const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) =>
           <option value={24}>24 hours (1 day)</option>
           <option value={48}>48 hours (2 days)</option>
           <option value={72}>72 hours (3 days)</option>
+          <option value={168}>168 hours (7 days)</option>
         </select>
         <p style={{ fontSize: '12px', color: '#9ca3af', marginTop: '8px' }}>
           Forecast will start from current time and predict the next {forecastHours} hours

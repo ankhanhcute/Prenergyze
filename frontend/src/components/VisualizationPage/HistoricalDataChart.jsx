@@ -15,7 +15,6 @@ const HistoricalDataChart = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fetch a larger dataset to allow scrolling back to beginning (50000 records)
         const historicalData = await getHistoricalData({ limit: 50000 });
         const processed = processHistoricalData(historicalData);
         setData(processed);

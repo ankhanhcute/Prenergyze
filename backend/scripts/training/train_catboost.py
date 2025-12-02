@@ -63,7 +63,8 @@ def train_catboost(use_hyperparameter):
             depth=6,
             learning_rate=0.03,
             l2_leaf_reg=1,
-            verbose=100
+            verbose=100,
+            train_dir=str(BASE_DIR / 'reports' / 'catboost_info')
         )
         model.fit(X_train, y_train)
 

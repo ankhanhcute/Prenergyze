@@ -244,6 +244,9 @@ const getModelDescription = (name) => {
   if (normalized.includes('lightgbm')) {
     return "Light Gradient Boosting Machine. Faster and more efficient than standard GBMs, capable of handling large datasets with lower memory usage.";
   }
+  if (normalized.includes('catboost')) {
+    return "Categorical Boosting. Gradient boosting algorithm that handles categorical features automatically and is robust to overfitting.";
+  }
   if (normalized.includes('linear regression')) {
     return "Simple baseline model assuming linear relationship between features and load. Fast but limited in capturing complex patterns.";
   }
