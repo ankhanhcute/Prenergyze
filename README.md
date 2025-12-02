@@ -371,7 +371,7 @@ Jupyter notebooks for exploratory data analysis and model development are availa
 - Leonardo Herrera (Co-lead)
 - Khanh Truong
 - Khang Ho
-- Rhode Suarez
+- Rhode Sanchez
 - Annette Garcia
 - Julian Novak
 - Gabriela Hernandez
