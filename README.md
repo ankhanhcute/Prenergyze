@@ -95,7 +95,7 @@ Web Frontend
    - `lstm.pth`
    - `model_comparison.json`
 
-## 🎯 Usage
+## Usage
 
 ### Starting the Backend API
 
@@ -172,7 +172,7 @@ curl -X POST "http://localhost:8000/forecast" \
   }'
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Prenergyze/
@@ -198,7 +198,7 @@ Prenergyze/
 └── README.md                # This file
 ```
 
-## 🤖 Models
+## Models
 
 The system uses an ensemble of machine learning models:
 
@@ -222,7 +222,7 @@ The system automatically selects the top-performing models based on:
 
 By default, the ensemble uses the top 3 models plus SARIMAX, using inverse RMSE weighting.
 
-## 📚 API Documentation
+## API Documentation
 
 ### Endpoints
 
@@ -293,7 +293,7 @@ Make a load forecast prediction.
 
 Interactive API documentation is available at `/docs` when the server is running.
 
-## 🔧 Development
+## Development
 
 ### Data Collection
 
@@ -346,12 +346,12 @@ pytest backend/tests/
 
 Jupyter notebooks for exploratory data analysis and model development are available in `backend/notebooks/`.
 
-## 📊 Data Sources
+## Data Sources
 
 - **Energy Data**: U.S. Energy Information Administration (EIA) API
 - **Weather Data**: Open-Meteo Historical Weather API
 
-## 🛠️ Technologies
+## Technologies
 
 - **Backend**: FastAPI, Python
 - **Frontend**: HTML, CSS, JavaScript (vanilla)
@@ -365,7 +365,7 @@ Jupyter notebooks for exploratory data analysis and model development are availa
 - **Data Processing**: pandas, numpy
 - **Visualization**: Recharts (Frontend), matplotlib/seaborn (Notebooks)
 
-## 👥 Contributors
+## Contributors
 
 - Adrian Morton (Lead)
 - Leonardo Herrera (Co-lead)
@@ -376,7 +376,7 @@ Jupyter notebooks for exploratory data analysis and model development are availa
 - Julian Novak
 - Gabriela Hernandez
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - U.S. Energy Information Administration for energy demand data
 - Open-Meteo for weather data
