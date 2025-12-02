@@ -193,7 +193,13 @@ Prenergyze/
 │   ├── notebooks/            # Jupyter notebooks for analysis
 │   └── plots/                # Visualization outputs
 ├── frontend/
+│   ├── src/
+│   │   ├── components/       # React components
+│   │   ├── pages/            # Page components
+│   │   ├── services/         # API services
+│   │   └── styles/           # CSS styles
 │   └── index.html            # Web interface
+├── reports/                  # Training logs and metadata
 ├── requirements.txt          # Python dependencies
 └── README.md                # This file
 ```
