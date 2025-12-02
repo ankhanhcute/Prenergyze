@@ -4,11 +4,13 @@
 
 ## Features
 
-- **Multi-Model Ensemble Forecasting**: Combines predictions from multiple machine learning models (Linear Regression, Random Forest, XGBoost, LightGBM, LSTM) for improved accuracy
+- **Multi-Model Ensemble Forecasting**: Combines predictions from multiple machine learning models (Linear Regression, Random Forest, XGBoost, LightGBM, CatBoost, LSTM, SARIMAX) for improved accuracy
 - **Weather-Based Predictions**: Uses comprehensive weather metrics including temperature, humidity, precipitation, cloud cover, and wind data
+- **Cyclical Pattern Recognition**: Incorporates SARIMAX and time-series specific features to capture daily and weekly load cycles
+- **Recursive Forecasting**: Supports multi-step forecasting (up to 7 days) using recursive prediction strategies
 - **RESTful API**: FastAPI-based backend with automatic API documentation
-- **Interactive Web Interface**: Modern, responsive frontend for testing and visualization
-- **Model Comparison**: Built-in model performance tracking and comparison
+- **Interactive Web Interface**: Modern React-based frontend with dynamic charts, weather-responsive backgrounds, and daily/hourly forecast views
+- **Model Comparison**: Built-in model performance tracking and comparison with live metrics
 - **Fast Inference**: Optimized ensemble selection based on accuracy and inference time
 
 ## Table of Contents
@@ -28,6 +30,7 @@ The project consists of three main components:
 1. **Backend API** (`backend/api/`): FastAPI application serving model predictions
 2. **Frontend** (`frontend/`): HTML/JavaScript interface for interacting with the API
 3. **ML Pipeline** (`backend/scripts/`): Data collection, preprocessing, model training, and inference scripts
+4. **Reports** (`reports/`): Generated reports and training logs (e.g., CatBoost info)
 
 ### Data Flow
 
@@ -197,15 +200,17 @@ Prenergyze/
 
 ## 🤖 Models
 
-The system uses an ensemble of five machine learning models:
+The system uses an ensemble of machine learning models:
 
-| Model | CV RMSE | CV MAE | CV R² | Inference Time (ms) |
-|-------|---------|--------|-------|---------------------|
-| **Linear Regression** | 756.17 | 508.86 | 0.956 | 0.005 |
-| **XGBoost** | 798.78 | 522.05 | 0.949 | 0.056 |
-| **LightGBM** | 801.85 | 536.71 | 0.948 | 0.020 |
-| **Random Forest** | 842.83 | 530.60 | 0.941 | 0.415 |
-| **LSTM** | 863.35 | 642.71 | 0.941 | 0.026 |
+| Model | Description |
+|-------|-------------|
+| **CatBoost** | Top-performing gradient boosting model that handles categorical features automatically. |
+| **Random Forest** | Ensemble learning method using multiple decision trees. Robust to outliers. |
+| **XGBoost** | Highly efficient gradient boosting algorithm known for high performance. |
+| **LightGBM** | Fast gradient boosting framework capable of handling large datasets efficiently. |
+| **LSTM** | Deep learning model (Long Short-Term Memory) for capturing long-term temporal dependencies. |
+| **SARIMAX** | Statistical model explicitly designed to capture seasonality and external weather factors. |
+| **Linear Regression** | Simple baseline model assuming linear relationship between features and load. |
 
 ### Ensemble Strategy
 
@@ -213,8 +218,9 @@ The system automatically selects the top-performing models based on:
 - Cross-validation RMSE
 - Inference time constraints
 - Model availability
+- **Force-inclusion logic**: SARIMAX is included to ensure cyclical patterns are captured even if its raw RMSE is higher.
 
-By default, the ensemble uses the top 3 models with inverse RMSE weighting.
+By default, the ensemble uses the top 3 models plus SARIMAX, using inverse RMSE weighting.
 
 ## 📚 API Documentation
 
@@ -353,13 +359,22 @@ Jupyter notebooks for exploratory data analysis and model development are availa
   - scikit-learn (Linear Regression, Random Forest)
   - XGBoost
   - LightGBM
+  - CatBoost
   - PyTorch (LSTM)
+  - Statsmodels (SARIMAX)
 - **Data Processing**: pandas, numpy
-- **Visualization**: matplotlib, seaborn
+- **Visualization**: Recharts (Frontend), matplotlib/seaborn (Notebooks)
 
 ## 👥 Contributors
 
-- Adrian Morton
+- Adrian Morton (Lead)
+- Leonardo Herrera (Co-lead)
+- Khanh Truong
+- Khang Ho
+- Rhode Suarez
+- Annette Garcia
+- Julian Novak
+- Gabriela Hernandez
 
 ## 🙏 Acknowledgments
 
