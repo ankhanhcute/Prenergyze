@@ -92,8 +92,10 @@ Web Frontend
    - `random_forest.pkl`
    - `xgboost.pkl`
    - `lightgbm.pkl`
+   - `catboost.pkl`
    - `lstm.pth`
    - `model_comparison.json`
+   
 
 ## Usage
 
