@@ -40,7 +40,7 @@ def update_comparison():
         "test_r2": float('-inf'),
         "inference_time_ms": 0.05,
         "rank": 0 # Placeholder
-    }
+    }  
     ranking.append(catboost_entry)
     
     # Sort by RMSE

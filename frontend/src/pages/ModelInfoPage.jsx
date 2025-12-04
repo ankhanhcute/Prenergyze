@@ -114,25 +114,13 @@ const ModelInfoPage = () => {
   const COLORS = ['#8b5cf6', '#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#ec4899'];
 
   return (
-    <div className="container">
-      <div className="header">
-        <h1>Model Information & Selection</h1>
-        <p>View performance metrics and select up to 3 models for your custom ensemble forecast.</p>
-        {selectedModels.length > 0 && (
-            <div style={{ marginTop: '10px', padding: '10px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '8px', display: 'inline-block' }}>
-              <span style={{ color: '#34d399', fontWeight: 'bold' }}>
-                {selectedModels.length}/3 Models Selected
-              </span>
-            </div>
-        )}
-      </div>
 
       <div className="main-content" style={{ gridTemplateColumns: '1fr' }}>
         {/* Performance Comparison Chart */}
         <div className="card">
           <h2>Model Performance Comparison (RMSE)</h2>
           <p style={{ color: '#9ca3af', marginBottom: '20px' }}>
-            Root Mean Square Error (RMSE) on test set. Lower is better.
+            Root Mean Square Error (RMSE) on the test set. Lower indicates higher accuracy.
           </p>
           <div style={{ height: '400px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -223,7 +211,6 @@ const ModelInfoPage = () => {
           })}
         </div>
       </div>
-    </div>
   );
 };
 
@@ -248,7 +235,7 @@ const getModelDescription = (name) => {
     return "Categorical Boosting. Gradient boosting algorithm that handles categorical features automatically and is robust to overfitting.";
   }
   if (normalized.includes('linear regression')) {
-    return "Simple baseline model assuming linear relationship between features and load. Fast but limited in capturing complex patterns.";
+    return "Simple baseline model assuming linear relationship between features and load. Fast and simplistic, but limited in capturing complex patterns.";
   }
   return "Machine learning model for load forecasting.";
 };

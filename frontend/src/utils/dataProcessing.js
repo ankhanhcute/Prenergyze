@@ -28,6 +28,15 @@ export const formatDateForAPI = (date) => {
 };
 
 /**
+ * Parse float safely, preserving 0 but returning null for NaN/null/undefined
+ */
+export const parseValue = (val) => {
+  if (val === null || val === undefined) return null;
+  const num = parseFloat(val);
+  return isNaN(num) ? null : num;
+};
+
+/**
  * Process historical data for chart display
  */
 export const processHistoricalData = (data) => {
@@ -38,9 +47,9 @@ export const processHistoricalData = (data) => {
   return data.map(item => ({
     ...item,
     date: new Date(item.date),
-    load: parseFloat(item.load) || 0,
-    temperature_2m: parseFloat(item.temperature_2m) || 0,
-    relative_humidity_2m: parseFloat(item.relative_humidity_2m) || 0,
+    load: parseValue(item.load) || 0,
+    temperature_2m: parseValue(item.temperature_2m),
+    relative_humidity_2m: parseValue(item.relative_humidity_2m),
   })).sort((a, b) => a.date - b.date);
 };
 
@@ -86,15 +95,15 @@ export const prepareForecastChartData = (historicalData, forecastData, weatherFo
       const itemDate = new Date(item.date);
       // Only include historical data up to current time
       if (itemDate <= now) {
-        const loadValue = parseFloat(item.load);
+        const loadValue = parseValue(item.load);
         // Only add if load is a valid positive number
-        if (!isNaN(loadValue) && loadValue > 0) {
+        if (loadValue !== null && loadValue > 0) {
           chartData.push({
             date: itemDate,
             load: loadValue,
             type: 'historical',
-            temperature_2m: parseFloat(item.temperature_2m) || null,
-            relative_humidity_2m: parseFloat(item.relative_humidity_2m) || null
+            temperature_2m: parseValue(item.temperature_2m),
+            relative_humidity_2m: parseValue(item.relative_humidity_2m)
           });
         }
       }
@@ -111,15 +120,15 @@ export const prepareForecastChartData = (historicalData, forecastData, weatherFo
         forecastDate = new Date(weatherForecast[index].date);
         // Only add if it's in the future
         if (forecastDate > now) {
-          const loadValue = parseFloat(value);
+          const loadValue = parseValue(value);
           // Only add if load is a valid positive number
-          if (!isNaN(loadValue) && loadValue > 0) {
+          if (loadValue !== null && loadValue > 0) {
             chartData.push({
               date: forecastDate,
               load: loadValue,
               type: 'forecast',
-              temperature_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].temperature_2m) || null) : null,
-              relative_humidity_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].relative_humidity_2m) || null) : null
+              temperature_2m: weatherForecast[index] ? parseValue(weatherForecast[index].temperature_2m) : null,
+              relative_humidity_2m: weatherForecast[index] ? parseValue(weatherForecast[index].relative_humidity_2m) : null
             });
           }
         }
@@ -127,15 +136,15 @@ export const prepareForecastChartData = (historicalData, forecastData, weatherFo
         // Fallback: calculate from current time
         forecastDate = new Date(now);
         forecastDate.setHours(forecastDate.getHours() + index + 1);
-        const loadValue = parseFloat(value);
+        const loadValue = parseValue(value);
         // Only add if load is a valid positive number
-        if (!isNaN(loadValue) && loadValue > 0) {
+        if (loadValue !== null && loadValue > 0) {
           chartData.push({
             date: forecastDate,
             load: loadValue,
             type: 'forecast',
-            temperature_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].temperature_2m) || null) : null,
-            relative_humidity_2m: weatherForecast[index] ? (parseFloat(weatherForecast[index].relative_humidity_2m) || null) : null
+            temperature_2m: weatherForecast[index] ? parseValue(weatherForecast[index].temperature_2m) : null,
+            relative_humidity_2m: weatherForecast[index] ? parseValue(weatherForecast[index].relative_humidity_2m) : null
           });
         }
       }
@@ -218,4 +227,3 @@ export const getCorrelationColor = (value) => {
   if (absValue >= 0.2) return '#eab308'; // Weak correlation (yellow)
   return '#d1d5db'; // No correlation (gray)
 };
-
