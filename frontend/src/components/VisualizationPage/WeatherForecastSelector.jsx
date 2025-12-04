@@ -1,13 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchWeatherForecast } from '../../services/meteoApi';
 
+const LOCATIONS = [
+  { name: 'Miami-Dade', lat: '25.5516', lon: '-80.6327' },
+  { name: 'Broward', lat: '26.1901', lon: '-80.3659' },
+  { name: 'Palm Beach', lat: '26.7056', lon: '-80.0364' }
+];
+
 const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) => {
-  const [lat, setLat] = useState('28.084358');
-  const [lon, setLon] = useState('-82.372894');
+  const [selectedLocation, setSelectedLocation] = useState(LOCATIONS[0]);
+  const [lat, setLat] = useState(LOCATIONS[0].lat);
+  const [lon, setLon] = useState(LOCATIONS[0].lon);
   const [forecastHours, setForecastHours] = useState(24);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [weatherData, setWeatherData] = useState(null);
+
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
+    setLat(location.lat);
+    setLon(location.lon);
+  };
 
   const handleFetchWeather = useCallback(async () => {
     try {
@@ -43,27 +56,38 @@ const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) =>
     <div className="card">
       <h2>Weather Forecast Selector</h2>
       <p style={{ marginBottom: '20px', color: '#9ca3af', fontSize: '14px' }}>
-        Fetch forecasted weather data from Open-Meteo API to use for load predictions.
+        Select a county to fetch forecasted weather data from Open-Meteo API for load predictions.
       </p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
-        <div className="form-group">
-          <label>Latitude:</label>
-          <input
-            type="number"
-            value={lat}
-            onChange={(e) => setLat(e.target.value)}
-            step="0.000001"
-          />
+      <div className="form-group" style={{ marginBottom: '20px' }}>
+        <label style={{ marginBottom: '10px', display: 'block' }}>Select County:</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' }}>
+          {LOCATIONS.map((location) => (
+            <button
+              key={location.name}
+              onClick={() => handleLocationSelect(location)}
+              className="btn"
+              style={{
+                background: selectedLocation.name === location.name 
+                  ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' 
+                  : 'rgba(31, 41, 55, 0.5)',
+                border: selectedLocation.name === location.name 
+                  ? 'none' 
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                color: '#e5e7eb',
+                opacity: 1,
+                transform: 'none',
+                boxShadow: selectedLocation.name === location.name 
+                  ? '0 4px 12px rgba(245, 158, 11, 0.3)' 
+                  : 'none'
+              }}
+            >
+              {location.name}
+            </button>
+          ))}
         </div>
-        <div className="form-group">
-          <label>Longitude:</label>
-          <input
-            type="number"
-            value={lon}
-            onChange={(e) => setLon(e.target.value)}
-            step="0.000001"
-          />
+        <div style={{ marginTop: '10px', fontSize: '12px', color: '#9ca3af' }}>
+          Selected Coordinates: {lat}° N, {lon}° W
         </div>
       </div>
 
@@ -89,8 +113,9 @@ const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) =>
         className="btn"
         onClick={handleFetchWeather}
         disabled={loading}
+        style={{ width: '100%', marginTop: '10px' }}
       >
-        {loading ? 'Fetching...' : 'Fetch Weather Forecast'}
+        {loading ? 'Fetching Forecast...' : `Get Forecast for ${selectedLocation.name}`}
       </button>
 
       {error && (
@@ -101,7 +126,7 @@ const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) =>
 
       {weatherData && (
         <div className="success" style={{ marginTop: '15px' }}>
-          <p>Successfully fetched {weatherData.length} weather data points</p>
+          <p>Successfully fetched {weatherData.length} weather data points for {selectedLocation.name}</p>
           <p style={{ fontSize: '12px', marginTop: '5px' }}>
             Date range: {weatherData[0]?.date} to {weatherData[weatherData.length - 1]?.date}
           </p>
@@ -112,4 +137,3 @@ const WeatherForecastSelector = ({ onWeatherDataFetched, autoFetch = false }) =>
 };
 
 export default WeatherForecastSelector;
-

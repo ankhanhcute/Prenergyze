@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Area } from 'recharts';
 import { getRecentHistoricalData, getForecast } from '../../services/api';
 import { processHistoricalData, prepareForecastChartData } from '../../utils/dataProcessing';
+import { calculateElectricityPrice } from '../../utils/pricingModel';
 
 const ForecastChart = ({ weatherData, onForecastGenerated }) => {
   const [historicalData, setHistoricalData] = useState([]);
@@ -10,7 +11,8 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
   const [loading, setLoading] = useState(true);
   const [forecastLoading, setForecastLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedWeather, setSelectedWeather] = useState('none');
+  const [selectedWeather, setSelectedWeather] = useState('temperature_2m');
+  const [showPricing, setShowPricing] = useState(false); // Toggle for pricing view
 
   useEffect(() => {
     const fetchHistorical = async () => {
@@ -258,14 +260,19 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
   }
 
   // Prepare data with separate keys for historical and forecast
-  const chartDataWithTypes = chartData.map(item => ({
-    date: item.date.getTime(), // Convert to timestamp for chart
-    dateObj: item.date, // Keep original for tooltip
-    historicalLoad: item.type === 'historical' ? item.load : null,
-    forecastLoad: item.type === 'forecast' ? item.load : null,
-    temperature_2m: item.temperature_2m,
-    relative_humidity_2m: item.relative_humidity_2m
-  }));
+  const chartDataWithTypes = chartData.map(item => {
+    const estimatedPrice = item.load ? calculateElectricityPrice(item.load, item.date) : null;
+    
+    return {
+      date: item.date.getTime(), // Convert to timestamp for chart
+      dateObj: item.date, // Keep original for tooltip
+      historicalLoad: item.type === 'historical' ? item.load : null,
+      forecastLoad: item.type === 'forecast' ? item.load : null,
+      temperature_2m: item.temperature_2m,
+      relative_humidity_2m: item.relative_humidity_2m,
+      price: estimatedPrice
+    };
+  });
 
   const now = new Date().getTime();
 
@@ -283,6 +290,20 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' }}>
         <h2 style={{ margin: 0 }}>Load Forecast</h2>
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            className="btn"
+            onClick={() => setShowPricing(!showPricing)}
+            style={{ 
+              fontSize: '12px', 
+              padding: '8px 12px',
+              background: showPricing ? 'rgba(16, 185, 129, 0.2)' : 'rgba(31, 41, 55, 0.5)',
+              border: showPricing ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.1)',
+              color: showPricing ? '#34d399' : '#e5e7eb'
+            }}
+          >
+            {showPricing ? 'Hide Price ($)' : 'Show Price ($)'}
+          </button>
+          
           <select 
             value={selectedWeather} 
             onChange={(e) => setSelectedWeather(e.target.value)}
@@ -375,7 +396,22 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
             tick={{ fill: '#9ca3af' }}
             domain={['auto', 'auto']}
           />
-          {selectedWeather !== 'none' && (
+          {showPricing && (
+            <YAxis 
+              yAxisId="price"
+              orientation="right"
+              label={{ 
+                value: 'Price ($/MWh)', 
+                angle: 90, 
+                position: 'insideRight', 
+                fill: '#10b981' 
+              }}
+              stroke="#10b981"
+              tick={{ fill: '#10b981' }}
+              domain={['auto', 'auto']}
+            />
+          )}
+          {!showPricing && selectedWeather !== 'none' && (
             <YAxis 
               yAxisId="weather"
               orientation="right"
@@ -405,6 +441,7 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
               if (value === null) return null;
               if (name === 'Temperature') return [`${value.toFixed(1)} °C`, name];
               if (name === 'Humidity') return [`${value.toFixed(1)} %`, name];
+              if (name === 'Est. Price') return [`$${value.toFixed(2)} /MWh`, name];
               return [`${value.toFixed(2)} MW`, name];
             }}
           />
@@ -412,12 +449,27 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
           <ReferenceLine 
             x={now} 
             yAxisId="load"
-            stroke="#a78bfa" 
+            stroke="#f59e0b" 
             strokeWidth={2}
             strokeDasharray="3 3"
-            label={{ value: "Now", position: "topRight", fill: "#a78bfa" }}
+            label={{ value: "Now", position: "topRight", fill: "#f59e0b" }}
           />
-          {selectedWeather !== 'none' && (
+          
+          {showPricing && (
+            <Area
+              yAxisId="price"
+              type="monotone"
+              dataKey="price"
+              stroke="#10b981"
+              fill="rgba(16, 185, 129, 0.1)"
+              strokeWidth={2}
+              name="Est. Price"
+              isAnimationActive={false}
+              zIndex={1}
+            />
+          )}
+
+          {!showPricing && selectedWeather !== 'none' && (
             <Line 
               yAxisId="weather"
               type="monotone" 
@@ -461,7 +513,7 @@ const ForecastChart = ({ weatherData, onForecastGenerated }) => {
 
       {!weatherData && (
         <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.3)', borderRadius: '12px' }}>
-          <p style={{ margin: 0, fontSize: '14px', color: '#a78bfa' }}>
+          <p style={{ margin: 0, fontSize: '14px', color: '#f59e0b' }}>
             <strong>Note:</strong> Fetch weather forecast data using the selector to the left to generate predictions for the next few hours.
           </p>
         </div>
