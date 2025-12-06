@@ -255,7 +255,7 @@ const DataVisualizations = () => {
   return (
     <div className="card" style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: '500px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Data Insights</h2>
+        <h2 style={{ margin: 0 }}>Data Analysis</h2>
         <span style={{ color: '#9ca3af', fontSize: '14px' }}>
           {currentIndex + 1} / {dynamicVisualizations.length}
         </span>

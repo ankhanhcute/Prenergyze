@@ -55,7 +55,7 @@ const ModelInfo = () => {
       <h2>Model Information</h2>
       
       <div style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#a78bfa', fontWeight: '600' }}>
+        <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#f59e0b', fontWeight: '600' }}>
           Available Models ({available_models?.length || 0})
         </h3>
         <ul className="model-list">
@@ -76,7 +76,7 @@ const ModelInfo = () => {
 
       {ensemble_models && ensemble_models.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#a78bfa', fontWeight: '600' }}>
+          <h3 style={{ fontSize: '18px', marginBottom: '12px', color: '#f59e0b', fontWeight: '600' }}>
             Ensemble Models (Optimal Selection)
           </h3>
           <ul className="model-list">
@@ -96,7 +96,7 @@ const ModelInfo = () => {
 
       <div style={{ marginTop: '24px', padding: '20px', background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)', borderRadius: '12px' }}>
         <p style={{ fontSize: '14px', color: '#d1d5db', margin: 0, lineHeight: '1.6' }}>
-          <strong style={{ color: '#a78bfa' }}>Ensemble Strategy:</strong> The system uses inverse RMSE weighting to combine 
+          <strong style={{ color: '#f59e0b' }}>Ensemble Strategy:</strong> The system uses inverse RMSE weighting to combine 
           predictions from the top-performing models, automatically selecting the optimal subset 
           based on cross-validation performance and inference time constraints.
         </p>

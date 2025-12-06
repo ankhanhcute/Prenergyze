@@ -86,6 +86,11 @@ class ForecastService:
         
         # Convert weather data to DataFrame
         future_df = pd.DataFrame(weather_data)
+        if 'date' in future_df.columns:
+            # Ensure dates are timezone-naive to match historical data
+            # Input is likely ISO format with timezone (e.g. "2023-10-27T10:00:00Z")
+            # We convert to UTC then remove timezone info to get naive UTC
+            future_df['date'] = pd.to_datetime(future_df['date'], utc=True).dt.tz_localize(None)
         
         # Impute missing features in future weather
         future_df = self._impute_missing_features(future_df)
@@ -105,7 +110,8 @@ class ForecastService:
                 # Load enough history to cover largest lag (168h) + buffer
                 # Loading last 720 hours (30 days) to cover extended lags (336h) + buffer
                 full_hist_df = pd.read_csv(data_path, low_memory=False)
-                full_hist_df['date'] = pd.to_datetime(full_hist_df['date'])
+                # Standardize to naive UTC
+                full_hist_df['date'] = pd.to_datetime(full_hist_df['date'], utc=True).dt.tz_localize(None)
                 full_hist_df = full_hist_df.sort_values('date')
                 hist_df = full_hist_df.tail(720).copy().reset_index(drop=True)
         except Exception as e:
@@ -136,7 +142,8 @@ class ForecastService:
                 # We won't have weather history, so weather lags will be NaN (imputed to mean)
                 min_load = max(1000.0, np.percentile(client_load[client_load > 0], 10)) if len(client_load[client_load > 0]) > 0 else 1000.0
                 
-                dates = pd.date_range(end=pd.Timestamp.now(), periods=len(client_load), freq='H')
+                # Use UTC naive for consistency
+                dates = pd.date_range(end=pd.Timestamp.utcnow().replace(tzinfo=None), periods=len(client_load), freq='H')
                 hist_df = pd.DataFrame({
                     'date': dates,
                     'load': client_load
